@@ -1,0 +1,4 @@
+{{- $host := .Values.ingress.host }}
+{{- range .Values.config.targets }}
+http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host }}{{ .target }} → {{ .source }}
+{{- end }}

@@ -1,0 +1,82 @@
+config:
+  targets:
+    - target: /storage/file
+      pathType: ImplementationSpecific
+      source: https://storage.yandexcloud.net/test/file.pdf
+      annotations: |
+        proxy_redirect     off;
+        proxy_hide_header Content-Type;
+        add_header Content-Type application/pdf;
+        add_header Content-Disposition "inline";
+
+    - target: /storage/files
+      pathType: ImplementationSpecific
+      source: https://storage.yandexcloud.net/test/public/
+      annotations: |
+        proxy_redirect     off;
+        proxy_hide_header Content-Type;
+        add_header Content-Type application/pdf;
+        add_header Content-Disposition "inline";
+
+    - target: /storage/public/
+      pathType: ImplementationSpecific
+      source: https://storage.yandexcloud.net/test/public/
+      annotations: |
+        proxy_set_header Host storage.yandexcloud.net;
+        add_header Access-Control-Allow-Origin *;
+        proxy_send_timeout         30;
+        proxy_read_timeout         30;
+
+replicaCount: 3
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: "1.29"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+
+securityContext: {}
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  host: reverse-proxy.example.com
+  className: "nginx"
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

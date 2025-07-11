@@ -1,0 +1,9 @@
+---
+remote: origin
+target-branch: main
+chart-dirs:
+  - charts
+chart-repos:
+  - ah-helm=https://ah-helm.github.io/helm-charts
+helm-extra-args: --timeout 600s
+# excluded-charts:
