@@ -1,0 +1,43 @@
+name: Update Helm Repository
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'charts/**'
+      - '.github/workflows/update-repo.yaml'
+
+jobs:
+  update-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.0
+
+      - name: Package charts
+        run: |
+          for chart in charts/*/; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              echo "Packaging $chart"
+              helm package "$chart"
+            fi
+          done
+
+      - name: Update index
+        run: |
+          helm repo index . --url https://ilyario.github.io/helms
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add index.yaml *.tgz
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update Helm repository index"
+          git push

@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  reverse-proxy:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-07-13T18:46:56.834917+08:00"
+    description: A Helm chart for deploying an Nginx proxy to S3 buckets
+    digest: e68b501d70e5a01ed46fb9a9731c482484f203d5d617b075fb22a4ad5831df12
+    name: reverse-proxy
+    type: application
+    urls:
+    - https://ilyario.github.io/helms/reverse-proxy-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-07-13T18:46:56.834256+08:00"

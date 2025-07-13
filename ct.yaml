@@ -1,9 +1,0 @@
----
-remote: origin
-target-branch: main
-chart-dirs:
-  - charts
-chart-repos:
-  - ah-helm=https://ilyario.github.io/ah-helm-charts/
-helm-extra-args: --timeout 600s
-# excluded-charts:
