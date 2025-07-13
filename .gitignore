@@ -1,5 +1,5 @@
-# Helm chart packages
-*.tgz
+# Helm chart packages (ignore in subdirectories, but allow in root for repository)
+charts/*/*.tgz
 
 # Temporary files
 *.tmp
