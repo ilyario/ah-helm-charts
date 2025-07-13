@@ -3,12 +3,12 @@ entries:
   static-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-13T19:05:30.636341+08:00"
+    created: "2025-07-13T11:07:01.932277467Z"
     description: A Helm chart for deploying an Nginx proxy to S3 buckets
-    digest: ce7fa8694e286230fc574d54ae429d5c33a93eb147161ff5c946dd40357d6feb
+    digest: 42fdd13f3e43f82b6475862881ce9347c5ab61ab40513cfdc552212b05430587
     name: static-proxy
     type: application
     urls:
     - https://ilyario.github.io/helms/packages/static-proxy-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-13T19:05:30.635009+08:00"
+generated: "2025-07-13T11:07:01.931755283Z"
