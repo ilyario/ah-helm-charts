@@ -9,6 +9,6 @@ entries:
     name: static-proxy
     type: application
     urls:
-    - https://ilyario.github.io/helms/packages/static-proxy-0.1.0.tgz
+    - https://ilyario.github.io/ah-helm-charts/packages/static-proxy-0.1.0.tgz
     version: 0.1.0
 generated: "2025-07-13T11:07:01.931755283Z"

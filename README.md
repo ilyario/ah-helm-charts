@@ -5,7 +5,7 @@ This repository contains Helm charts for deploying various services in Kubernete
 ## Adding this repository
 
 ```bash
-helm repo add helms https://ilyario.github.io/helms
+helm repo add ah-helm https://ilyario.github.io/ah-helm-charts
 helm repo update
 ```
 
@@ -26,13 +26,13 @@ Main features:
 #### Installation
 
 ```bash
-helm install my-static-proxy helms/static-proxy
+helm install my-static-proxy ah-helm/static-proxy
 ```
 
 #### Upgrading
 
 ```bash
-helm upgrade my-static-proxy helms/static-proxy
+helm upgrade my-static-proxy ah-helm/static-proxy
 ```
 
 ## Development
@@ -46,7 +46,7 @@ To add a new chart:
 ## Repository Structure
 
 ```
-helms/
+ah-helm-charts/
 ├── charts/
 │   └── static-proxy/     # Chart source
 ├── index.yaml            # Repository index (auto-generated)
