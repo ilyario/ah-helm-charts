@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Helm
         uses: azure/setup-helm@v3
@@ -41,4 +42,6 @@ jobs:
           git add index.yaml
           git add -f *.tgz
           git diff --quiet && git diff --staged --quiet || git commit -m "Update Helm repository index"
-          git push
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
