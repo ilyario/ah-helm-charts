@@ -11,7 +11,7 @@ helm repo update
 
 ## Available Charts
 
-### reverse-proxy
+### static-proxy
 
 A Helm chart for deploying an NGINX-based reverse proxy.
 
@@ -26,13 +26,13 @@ Main features:
 #### Installation
 
 ```bash
-helm install my-reverse-proxy helms/reverse-proxy
+helm install my-static-proxy helms/static-proxy
 ```
 
 #### Upgrading
 
 ```bash
-helm upgrade my-reverse-proxy helms/reverse-proxy
+helm upgrade my-static-proxy helms/static-proxy
 ```
 
 ## Development
@@ -48,7 +48,7 @@ To add a new chart:
 ```
 helms/
 ├── charts/
-│   └── reverse-proxy/     # Chart source
+│   └── static-proxy/     # Chart source
 ├── index.yaml            # Repository index (auto-generated)
 ├── *.tgz                 # Packaged charts (auto-generated)
 └── .github/workflows/    # CI/CD workflows

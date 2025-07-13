@@ -48,7 +48,7 @@ service:
   port: 80
 
 ingress:
-  host: reverse-proxy.example.com
+  host: static-proxy.example.com
   className: "nginx"
   annotations: {}
     # kubernetes.io/ingress.class: nginx

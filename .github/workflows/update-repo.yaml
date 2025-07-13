@@ -24,23 +24,24 @@ jobs:
 
       - name: Package charts
         run: |
+          mkdir -p packages
           for chart in charts/*/; do
             if [ -f "$chart/Chart.yaml" ]; then
               echo "Packaging $chart"
-              helm package "$chart"
+              helm package "$chart" -d packages/
             fi
           done
 
       - name: Update index
         run: |
-          helm repo index . --url https://ilyario.github.io/helms
+          helm repo index . --url https://ilyario.github.io/helms --merge index.yaml
 
       - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add index.yaml
-          git add -f *.tgz
+          git add packages/
           git diff --quiet && git diff --staged --quiet || git commit -m "Update Helm repository index"
           git push origin main
         env:

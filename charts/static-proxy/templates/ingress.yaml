@@ -1,9 +1,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "reverse-proxy.fullname" . }}
+  name: {{ include "static-proxy.fullname" . }}
   labels:
-    {{- include "reverse-proxy.labels" . | nindent 4 }}
+    {{- include "static-proxy.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -31,7 +31,7 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ $.Values.service.name | default (include "reverse-proxy.fullname" $) }}
+                name: {{ $.Values.service.name | default (include "static-proxy.fullname" $) }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}

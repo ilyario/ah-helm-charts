@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "reverse-proxy.fullname" . }}
+  name: {{ include "static-proxy.fullname" . }}
   labels:
-    {{- include "reverse-proxy.labels" . | nindent 4 }}
+    {{- include "static-proxy.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "reverse-proxy.selectorLabels" . | nindent 6 }}
+      {{- include "static-proxy.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "reverse-proxy.labels" . | nindent 8 }}
+        {{- include "static-proxy.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -34,7 +34,7 @@ spec:
       volumes:
         - name: nginx-config
           configMap:
-            name: {{ include "reverse-proxy.fullname" . }}
+            name: {{ include "static-proxy.fullname" . }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
