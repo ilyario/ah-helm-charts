@@ -1,14 +1,25 @@
 apiVersion: v1
 entries:
+  citadel:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-08-24T07:00:10.842740327Z"
+    description: A Helm chart for monolithic application
+    digest: e3a9d66b47333d00f3e521bf82768b5da3dbb7726f1dd87b24c10b81bbfae505
+    name: citadel
+    type: application
+    urls:
+    - https://ilyario.github.io/ah-helm-charts/packages/citadel-0.1.0.tgz
+    version: 0.1.0
   static-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-13T11:13:57.570123055Z"
+    created: "2025-08-24T07:00:10.843121984Z"
     description: A Helm chart for deploying an Nginx proxy to S3 buckets
-    digest: 909a15379d899a3e9c55c27d4f20b5faa79feb489c4b0f4e7d37cbd602ac4178
+    digest: fccbc151c4587f4710938bdedea76e3ef55a3f617c5f889eaa544a55a710fdfb
     name: static-proxy
     type: application
     urls:
     - https://ilyario.github.io/ah-helm-charts/packages/static-proxy-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-13T11:13:57.56957068Z"
+generated: "2025-08-24T07:00:10.84204461Z"
