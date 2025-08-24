@@ -1,0 +1,26 @@
+1. Доступные url:
+{{- range $app := .Values.applications }}
+{{- if and $app.ingress $app.ingress.enabled }}
+{{- range $host := $app.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $app.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+2. Приложения доступны друг другу по адресам:
+{{- range $app := .Values.applications }}
+  {{- if $app.service }}
+  http://{{ include "citadel-common.fullname" $ }}-{{ .name }}:{{ $app.service.port }}
+  {{- end }}
+{{- end }}
+
+{{- if .Values.common.grafana }}
+3. Логи приложении доступны тут:
+  https://grafana.{{ .Values.common.grafana }}/explore?schemaVersion=1&panes=%7B%22a5k%22:%7B%22datasource%22:%22P8E80F9AEF21F6940%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%7Bnamespace%3D%5C%22{{ $.Release.Namespace }}%5C%22%7D%20%7C%3D%20%60%60%22,%22queryType%22:%22range%22,%22datasource%22:%7B%22type%22:%22loki%22,%22uid%22:%22P8E80F9AEF21F6940%22%7D,%22editorMode%22:%22builder%22,%22direction%22:%22backward%22%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D,%22panelsState%22:%7B%22logs%22:%7B%22visualisationType%22:%22logs%22%7D%7D%7D%7D&orgId=1
+
+4. Потребление ресурсов приложения доступны тут:
+  https://grafana.{{ .Values.common.grafana }}/d/k8s_views_ns/kubernetes-views-namespaces?orgId=1&from=now-1h&to=now&timezone=browser&var-datasource=prometheus&var-cluster=&var-namespace={{ $.Release.Namespace }}&var-resolution=30s&var-created_by=$__all&refresh=30s
+{{- end }}
+

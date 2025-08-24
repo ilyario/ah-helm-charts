@@ -1,0 +1,47 @@
+{{ $common := .Values.common }}
+{{- range $app := .Values.applications }}
+{{- if $app.ingress }}
+{{- if $app.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "citadel-common.fullname" $ }}-{{ $app.name }}
+  labels:
+    {{- include "citadel-common.labels" $ | nindent 4 }}
+  {{- with $app.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if or $app.ingress.className $common.ingress.className }}
+  ingressClassName: {{ $app.ingress.className | default $common.ingress.className }}
+{{- end }}
+{{- if $app.ingress.tls }}
+  tls:
+  {{- range $app.ingress.tls }}
+  - hosts:
+      {{- range .hosts }}
+      - {{ . | quote }}
+      {{- end }}
+    secretName: {{ .secretName }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- range $host := $app.ingress.hosts }}
+  - host: {{ $host.host | quote }}
+    http:
+      paths:
+        {{- range $path := $host.paths }}
+        - path: {{ $path.path }}
+          pathType: {{ $path.pathType | default "ImplementationSpecific" }}
+          backend:
+            service:
+              name: {{ include "citadel-common.fullname" $ }}-{{ $app.name }}
+              port:
+                number: {{ $app.service.port }}
+        {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

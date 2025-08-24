@@ -1,0 +1,122 @@
+{{ $common := .Values.common }}
+{{- range .Values.applications }}
+{{- $appName := .name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "citadel-common.labels" $ | nindent 4 }}
+    component: {{ $appName }}
+    secrets.infisical.com/auto-reload: "true"
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not (and .autoscaling .autoscaling.enabled) }}
+  replicas: {{ .replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "citadel-common.selectorLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with .podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "citadel-common.selectorLabels" $ | nindent 8 }}
+    spec:
+      {{- with .imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "citadel-common.serviceAccountName" $ }}
+      {{- with .podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $appName }}
+          {{- with .securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if or $common.env .env  }}
+          env:
+            {{- with $common.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- if .image }}
+          image: "{{ default $common.image.repository .image.repository }}:{{ default $common.image.tag .image.tag }}"
+          imagePullPolicy: {{ default $common.image.pullPolicy .image.pullPolicy }}
+          {{- else }}
+          image: "{{ $common.image.repository }}:{{ $common.image.tag }}"
+          imagePullPolicy: {{ $common.image.pullPolicy }}
+          {{- end }}
+          {{- if .command }}
+          command: {{ toYaml .command | nindent 12 }}
+          {{- end }}
+          {{- if .args }}
+          args: {{ toYaml .args | nindent 12 }}
+          {{- end }}
+          {{- if and $common.infisical $common.infisical.enabled }}
+          {{- if or (and $common.infisical.commonSecret $common.infisical.commonSecret.enabled) (and .infisical .infisical.enabled) }}
+          envFrom:
+            {{- if and $common.infisical $common.infisical.enabled }}
+            - secretRef:
+                name: {{ include "citadel-common.fullname" $ }}-common-env-vars
+            {{- end }}
+            {{- if and .infisical .infisical.enabled }}
+            - secretRef:
+                name: {{ include "citadel-common.fullname" $ }}-{{ .name }}-env-vars
+            {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if .service }}
+          ports:
+            - name: http-{{ .name }}
+              containerPort: {{ .service.port }}
+              protocol: TCP
+          {{- end }}
+          {{- with .livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with $common.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $common.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range . }}
+        - {{- if .labelSelector.matchLabels }}
+            {{- $_ := set .labelSelector.matchLabels "component" $appName }}
+          {{- end }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- with $common.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $common.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

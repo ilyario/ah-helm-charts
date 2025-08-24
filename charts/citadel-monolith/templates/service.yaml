@@ -1,0 +1,21 @@
+{{- range .Values.applications }}
+{{- if .service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "citadel-common.labels" $ | nindent 4 }}
+spec:
+  type: {{ .service.type }}
+  ports:
+    - port: {{ .service.port }}
+      targetPort: http-{{ .name }}
+      protocol: TCP
+      name: http-{{ .name }}
+  selector:
+    {{- include "citadel-common.selectorLabels" $ | nindent 4 }}
+{{- end }}
+{{- end }}
+
