@@ -9,7 +9,7 @@ metadata:
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
   annotations:
-    "helm.sh/hook": {{ default "pre-install,post-upgrade" $job.helmHook }}
+    "helm.sh/hook": {{ default "pre-install,pre-upgrade" $job.helmHook }}
     "helm.sh/hook-delete-policy": {{ default "before-hook-creation,hook-succeeded" $job.helmHookDeletePolicy }}
     "helm.sh/hook-weight": {{ $job.hookWeight | default "10" | quote }}
 spec:
