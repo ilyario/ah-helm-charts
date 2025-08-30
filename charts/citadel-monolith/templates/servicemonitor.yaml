@@ -1,0 +1,29 @@
+{{- range .Values.applications }}
+{{- if and .service .serviceMonitor (and .serviceMonitor .serviceMonitor.enabled) }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "citadel-common.labels" $ | nindent 4 }}
+    component: {{ .name }}
+    {{- with .serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "citadel-common.selectorLabels" $ | nindent 6 }}
+      component: {{ .name }}
+  endpoints:
+    - port: {{ .serviceMonitor.port }}
+      path: {{ .serviceMonitor.path }}
+      interval: {{ .serviceMonitor.interval }}
+      scrapeTimeout: {{ .serviceMonitor.scrapeTimeout }}
+{{- end }}
+{{- end }}

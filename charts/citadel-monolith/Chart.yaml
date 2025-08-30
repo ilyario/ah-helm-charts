@@ -1,6 +1,21 @@
 apiVersion: v2
 name: citadel
-description: A Helm chart for monolithic application
+description: A Helm chart for deploying monolithic applications in Kubernetes with enhanced security, monitoring, and configuration management
 type: application
-version: 0.1.1
+version: 0.2.0
 appVersion: "1.0.0"
+keywords:
+  - kubernetes
+  - helm
+  - deployment
+  - monolithic
+  - monitoring
+home: https://github.com/ilyario/ah-helm-charts
+sources:
+  - https://github.com/ilyario/ah-helm-charts
+maintainers:
+  - name: Ilya Ponomarev
+    email: ponomarevid@ya.ru
+annotations:
+  category: Application
+  licenses: MIT

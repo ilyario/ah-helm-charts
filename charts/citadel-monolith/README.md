@@ -11,6 +11,8 @@ This Helm chart is designed for deploying monolithic applications with support f
 - Ingress configuration
 - Jobs for migrations and other tasks
 - Monitoring through Grafana
+- Startup, liveness and readiness probes
+- Prometheus ServiceMonitor for metrics collection
 
 ## Requirements
 
@@ -147,6 +149,74 @@ helm get values my-citadel
 
 ## Monitoring
 
+### Prometheus ServiceMonitor
+
+The chart supports Prometheus monitoring through ServiceMonitor resources. Each application can have its own ServiceMonitor configuration:
+
+```yaml
+applications:
+  - name: web
+    service:
+      type: ClusterIP
+      port: 8000
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      port: http
+      labels:
+        release: prometheus
+      annotations: {}
+
+  - name: api
+    service:
+      type: ClusterIP
+      port: 9000
+    serviceMonitor:
+      enabled: true
+      interval: 15s
+      scrapeTimeout: 5s
+      path: /api/metrics
+      port: http
+      labels:
+        release: prometheus
+        app: api
+```
+
+### Health Checks
+
+The chart supports three types of health checks:
+
+1. **Startup Probe**: Used to determine if the application has successfully started
+2. **Liveness Probe**: Used to determine if the application is alive
+3. **Readiness Probe**: Used to determine if the application is ready to serve traffic
+
+Example configuration:
+
+```yaml
+applications:
+  - name: web
+    startupProbe:
+      httpGet:
+        path: /health
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 30
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: http
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: http
+```
+
+### Grafana Integration
+
 After installing the chart, you will have access to:
 
 1. **Application logs** (if Grafana is configured):
@@ -221,6 +291,14 @@ applications:
       requests:
         cpu: 250m
         memory: 256Mi
+    startupProbe:
+      httpGet:
+        path: /health
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 30
     livenessProbe:
       httpGet:
         path: /health
@@ -229,6 +307,14 @@ applications:
       httpGet:
         path: /ready
         port: http
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      port: http
+      labels:
+        release: prometheus
 ```
 
 ## Troubleshooting

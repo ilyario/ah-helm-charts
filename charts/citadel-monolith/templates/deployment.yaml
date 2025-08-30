@@ -95,6 +95,10 @@ spec:
               containerPort: {{ .service.port }}
               protocol: TCP
           {{- end }}
+          {{- with .startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

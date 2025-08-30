@@ -110,7 +110,15 @@ applications:
         cpu: 100m
         memory: 128Mi
 
-    # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+    # This is to setup the liveness, readiness and startup probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+    startupProbe:
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 30
     livenessProbe:
       httpGet:
         path: /
@@ -126,3 +134,13 @@ applications:
       secretsPath: /
       credentialsRef:
         secretName: client-infisical-secrets
+
+    # ServiceMonitor configuration for this application
+    serviceMonitor:
+      enabled: false
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      port: http
+      labels: {}
+      annotations: {}
