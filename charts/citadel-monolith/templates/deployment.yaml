@@ -30,9 +30,14 @@ spec:
       labels:
         {{- include "citadel-common.selectorLabels" $ | nindent 8 }}
     spec:
-      {{- with .imagePullSecrets }}
+      {{- if or .imagePullSecrets $common.imagePullSecrets }}
       imagePullSecrets:
+        {{- with .imagePullSecrets }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with $common.imagePullSecrets }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       serviceAccountName: {{ include "citadel-common.serviceAccountName" $ }}
       {{- with .podSecurityContext }}
@@ -67,8 +72,7 @@ spec:
           {{- if .args }}
           args: {{ toYaml .args | nindent 12 }}
           {{- end }}
-          {{- if and $common.infisical $common.infisical.enabled }}
-          {{- if or (and $common.infisical.commonSecret $common.infisical.commonSecret.enabled) (and .infisical .infisical.enabled) }}
+          {{- if or (and $common.infisical $common.infisical.enabled) (and .infisical .infisical.enabled) $common.sharedSecrets }}
           envFrom:
             {{- if and $common.infisical $common.infisical.enabled }}
             - secretRef:
@@ -78,7 +82,12 @@ spec:
             - secretRef:
                 name: {{ include "citadel-common.fullname" $ }}-{{ .name }}-env-vars
             {{- end }}
-          {{- end }}
+            {{- if $common.sharedSecrets }}
+            {{- range $common.sharedSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
           {{- end }}
           {{- if .service }}
           ports:
@@ -97,6 +106,13 @@ spec:
           {{- with .resources }}
           resources:
             {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $common.sharedPVCs }}
+          volumeMounts:
+            {{- range $common.sharedPVCs }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
           {{- end }}
       {{- with $common.nodeSelector }}
       nodeSelector:
@@ -118,5 +134,13 @@ spec:
       {{- with $common.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $common.sharedPVCs }}
+      volumes:
+        {{- range $common.sharedPVCs }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+        {{- end }}
       {{- end }}
 {{- end }}

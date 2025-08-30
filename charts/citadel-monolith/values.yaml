@@ -18,9 +18,22 @@ common:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-  env:
-    - name: TZ
-      value: Asia/Irkutsk
+  imagePullSecrets: []
+    # - name: regcred
+  sharedPVCs: []
+    # - name: static-storage
+    #   mountPath: /static
+    #   storageClass: csi-s3
+    #   size: 10Gi
+    #   accessModes:
+    #     - ReadWriteMany
+  sharedSecrets: []
+    # - my-secret-name
+    # - another-secret-name
+
+  env: []
+    # - name: TZ
+    #   value: Asia/Irkutsk
   topologySpreadConstraints:
     - maxSkew: 1
       topologyKey: topology.kubernetes.io/zone

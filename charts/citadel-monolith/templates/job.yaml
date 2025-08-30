@@ -11,7 +11,7 @@ metadata:
   annotations:
     "helm.sh/hook": {{ default "pre-install,pre-upgrade" $job.helmHook }}
     "helm.sh/hook-delete-policy": {{ default "before-hook-creation,hook-succeeded" $job.helmHookDeletePolicy }}
-    "helm.sh/hook-weight": {{ $job.hookWeight | default "10" | quote }}
+    "helm.sh/hook-weight": {{ $job.hookWeight | default "15" | quote }}
 spec:
   {{- with $job.backoffLimit }}
   backoffLimit: {{ . }}
@@ -21,7 +21,7 @@ spec:
   {{- end }}
   template:
     metadata:
-      {{- with .podAnnotations }}
+      {{- with $job.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -29,48 +29,66 @@ spec:
         {{- include "citadel-common.labels" $ | nindent 8 }}
     spec:
       restartPolicy: Never
-      {{- with .imagePullSecrets }}
+      {{- if or $job.imagePullSecrets $common.imagePullSecrets }}
       imagePullSecrets:
+        {{- with $job.imagePullSecrets }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with $common.imagePullSecrets }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       serviceAccountName: {{ include "citadel-common.serviceAccountName" $ }}
-      {{- with .podSecurityContext }}
+      {{- with $job.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ $.Chart.Name }}-{{ .name }}
-          {{- with .securityContext }}
+          {{- with $job.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{ if or $common.env .env  }}
+          {{ if or $common.env $job.env  }}
           env:
             {{- with $common.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-            {{- with .env }}
+            {{- with $job.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
           image: "{{ if $job.image }}{{ default $common.image.repository $job.image.repository }}{{ else }}{{ $common.image.repository }}{{ end }}:{{ if $job.image }}{{ default $common.image.tag $job.image.tag }}{{ else }}{{ $common.image.tag }}{{ end }}"
           imagePullPolicy: {{ if $job.image }}{{ default $common.image.pullPolicy $job.image.pullPolicy }}{{ else }}{{ $common.image.pullPolicy }}{{ end }}
-          {{- with .command }}
+          {{- with $job.command }}
           command: {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with $job.args }}
           args: {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if or $common.infisical.enabled }}
+          {{- if or $common.infisical.enabled $common.sharedSecrets }}
           envFrom:
             {{- if $common.infisical.enabled }}
             - secretRef:
                 name: {{ include "citadel-common.fullname" $ }}-common-env-vars
             {{- end }}
+            {{- if $common.sharedSecrets }}
+            {{- range $common.sharedSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
           {{- end }}
-          {{- with .resources }}
+          {{- with $job.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $common.sharedPVCs }}
+          volumeMounts:
+            {{- range $common.sharedPVCs }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
           {{- end }}
       {{- with $common.nodeSelector }}
       nodeSelector:
@@ -79,6 +97,14 @@ spec:
       {{- with $common.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $common.sharedPVCs }}
+      volumes:
+        {{- range $common.sharedPVCs }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+        {{- end }}
       {{- end }}
 {{- end }}
 {{- end }}
