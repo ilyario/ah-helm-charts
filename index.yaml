@@ -6,10 +6,10 @@ entries:
       licenses: MIT
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-08-30T07:29:40.339095561Z"
+    created: "2025-09-24T17:24:06.841253164Z"
     description: A Helm chart for deploying monolithic applications in Kubernetes
       with enhanced security, monitoring, and configuration management
-    digest: 08dc6870e811c5230144fa7a43759d775039dc80b892282c00710e194ea6bed5
+    digest: 06df501ace922b37e80ec13cc8a050650df06a42ed5c8006a3926efba7731da8
     home: https://github.com/ilyario/ah-helm-charts
     keywords:
     - kubernetes
@@ -29,7 +29,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-08-30T07:29:40.338394973Z"
+    created: "2025-09-24T17:24:06.840519317Z"
     description: A Helm chart for monolithic application
     digest: b2e79adac93fbb7d8aa4117ae15f1effa7a13b955dd46201482f47c5be6211bb
     name: citadel
@@ -40,12 +40,12 @@ entries:
   static-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-08-30T07:29:40.339448835Z"
+    created: "2025-09-24T17:24:06.84163491Z"
     description: A Helm chart for deploying an Nginx proxy to S3 buckets
-    digest: 64168757d5ec64f03e70dd9018899765d5190908678407d1255ff7ce8a7b8c58
+    digest: 6e140dd8b759670f10bee87e501542d2ef3c1558d487e53f34ced9c6e2bb7144
     name: static-proxy
     type: application
     urls:
     - https://ilyario.github.io/ah-helm-charts/packages/static-proxy-0.1.0.tgz
     version: 0.1.0
-generated: "2025-08-30T07:29:40.337687823Z"
+generated: "2025-09-24T17:24:06.839791572Z"
