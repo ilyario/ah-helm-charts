@@ -1,0 +1,125 @@
+{{ $common := .Values.common }}
+{{- range $cronjob := .Values.cronjobs }}
+{{- if $cronjob.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "citadel-common.fullname" $ }}-cronjob-{{ .name }}
+  labels:
+    {{- include "citadel-common.labels" $ | nindent 4 }}
+spec:
+  schedule: {{ $cronjob.schedule | quote }}
+  {{- with $cronjob.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  {{- with $cronjob.concurrencyPolicy }}
+  concurrencyPolicy: {{ . }}
+  {{- end }}
+  {{- with $cronjob.successfulJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ . }}
+  {{- end }}
+  {{- with $cronjob.failedJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ . }}
+  {{- end }}
+  {{- with $cronjob.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ . }}
+  {{- end }}
+  suspend: {{ default false $cronjob.suspend }}
+  jobTemplate:
+    spec:
+      {{- with $cronjob.backoffLimit }}
+      backoffLimit: {{ . }}
+      {{- end }}
+      {{- with $cronjob.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ . }}
+      {{- end }}
+      template:
+        metadata:
+          {{- with $cronjob.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "citadel-common.labels" $ | nindent 12 }}
+        spec:
+          restartPolicy: Never
+          {{- if or $cronjob.imagePullSecrets $common.imagePullSecrets }}
+          imagePullSecrets:
+            {{- with $cronjob.imagePullSecrets }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with $common.imagePullSecrets }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          serviceAccountName: {{ include "citadel-common.serviceAccountName" $ }}
+          {{- with $cronjob.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: {{ $.Chart.Name }}-{{ .name }}
+              {{- with $cronjob.securityContext }}
+              securityContext:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{ if or $common.env $cronjob.env  }}
+              env:
+                {{- with $common.env }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+                {{- with $cronjob.env }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+              {{- end }}
+              image: "{{ if $cronjob.image }}{{ default $common.image.repository $cronjob.image.repository }}{{ else }}{{ $common.image.repository }}{{ end }}:{{ if $cronjob.image }}{{ default $common.image.tag $cronjob.image.tag }}{{ else }}{{ $common.image.tag }}{{ end }}"
+              imagePullPolicy: {{ if $cronjob.image }}{{ default $common.image.pullPolicy $cronjob.image.pullPolicy }}{{ else }}{{ $common.image.pullPolicy }}{{ end }}
+              {{- with $cronjob.command }}
+              command: {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with $cronjob.args }}
+              args: {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- if or $common.infisical.enabled $common.sharedSecrets }}
+              envFrom:
+                {{- if $common.infisical.enabled }}
+                - secretRef:
+                    name: {{ include "citadel-common.fullname" $ }}-common-env-vars
+                {{- end }}
+                {{- if $common.sharedSecrets }}
+                {{- range $common.sharedSecrets }}
+                - secretRef:
+                    name: {{ . }}
+                {{- end }}
+                {{- end }}
+              {{- end }}
+              {{- with $cronjob.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- if $common.sharedPVCs }}
+              volumeMounts:
+                {{- range $common.sharedPVCs }}
+                - name: {{ .name }}
+                  mountPath: {{ .mountPath }}
+                {{- end }}
+              {{- end }}
+          {{- with $common.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $common.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $common.sharedPVCs }}
+          volumes:
+            {{- range $common.sharedPVCs }}
+            - name: {{ .name }}
+              persistentVolumeClaim:
+                claimName: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+            {{- end }}
+          {{- end }}
+{{- end }}
+{{- end }}

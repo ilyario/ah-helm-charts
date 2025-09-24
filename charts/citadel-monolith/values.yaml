@@ -54,6 +54,37 @@ common:
   ingress:
     className: nginx
 
+cronjobs: []
+  # - name: backup
+  #   enabled: false
+  #   schedule: "0 2 * * *"  # Каждый день в 2:00
+  #   timeZone: "UTC"
+  #   concurrencyPolicy: Forbid
+  #   successfulJobsHistoryLimit: 3
+  #   failedJobsHistoryLimit: 1
+  #   startingDeadlineSeconds: 300
+  #   suspend: false
+  #   command: ["python"]
+  #   args: ["manage.py", "backup"]
+  #   env: []
+  #   image:
+  #     repository: nginx
+  #     pullPolicy: IfNotPresent
+  #     tag: ""
+  #   resources:
+  #     limits:
+  #       cpu: 100m
+  #       memory: 128Mi
+  #     requests:
+  #       cpu: 100m
+  #       memory: 128Mi
+  #   backoffLimit: 3
+  #   activeDeadlineSeconds: 3600
+  #   podAnnotations: {}
+  #   podSecurityContext: {}
+  #   securityContext: {}
+  #   imagePullSecrets: []
+
 jobs:
   - name: migration
     enabled: false
