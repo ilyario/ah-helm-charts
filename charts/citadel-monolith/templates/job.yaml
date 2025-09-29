@@ -8,6 +8,7 @@ metadata:
   name: {{ include "citadel-common.fullname" $ }}-job-{{ .name }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ .name }}
   annotations:
     "helm.sh/hook": {{ default "pre-install,pre-upgrade" $job.helmHook }}
     "helm.sh/hook-delete-policy": {{ default "before-hook-creation,hook-succeeded" $job.helmHookDeletePolicy }}
@@ -24,6 +25,7 @@ spec:
       {{- with $job.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
+        app.kubernetes.io/component: {{ .name }}
       {{- end }}
       labels:
         {{- include "citadel-common.labels" $ | nindent 8 }}

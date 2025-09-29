@@ -29,6 +29,7 @@ spec:
       {{- end }}
       labels:
         {{- include "citadel-common.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $appName }}
     spec:
       {{- if or .imagePullSecrets $common.imagePullSecrets }}
       imagePullSecrets:

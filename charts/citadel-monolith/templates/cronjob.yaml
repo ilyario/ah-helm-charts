@@ -8,6 +8,7 @@ metadata:
   name: {{ include "citadel-common.fullname" $ }}-cronjob-{{ .name }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ .name }}
 spec:
   schedule: {{ $cronjob.schedule | quote }}
   {{- with $cronjob.timeZone }}
@@ -39,6 +40,7 @@ spec:
           {{- with $cronjob.podAnnotations }}
           annotations:
             {{- toYaml . | nindent 12 }}
+            app.kubernetes.io/component: {{ .name }}
           {{- end }}
           labels:
             {{- include "citadel-common.labels" $ | nindent 12 }}
