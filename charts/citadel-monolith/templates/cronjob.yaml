@@ -40,10 +40,10 @@ spec:
           {{- with $cronjob.podAnnotations }}
           annotations:
             {{- toYaml . | nindent 12 }}
-            app.kubernetes.io/component: {{ .name }}
           {{- end }}
           labels:
             {{- include "citadel-common.labels" $ | nindent 12 }}
+            app.kubernetes.io/component: {{ .name }}
         spec:
           restartPolicy: Never
           {{- if or $cronjob.imagePullSecrets $common.imagePullSecrets }}

@@ -25,10 +25,10 @@ spec:
       {{- with $job.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
-        app.kubernetes.io/component: {{ .name }}
       {{- end }}
       labels:
         {{- include "citadel-common.labels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ .name }}
     spec:
       restartPolicy: Never
       {{- if or $job.imagePullSecrets $common.imagePullSecrets }}
