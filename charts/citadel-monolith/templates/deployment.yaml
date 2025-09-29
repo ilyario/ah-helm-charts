@@ -8,7 +8,7 @@ metadata:
   name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
-    component: {{ $appName }}
+    app.kubernetes.io/component= {{ $appName }}
     secrets.infisical.com/auto-reload: "true"
   {{- with .annotations }}
   annotations:
