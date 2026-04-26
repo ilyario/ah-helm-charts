@@ -82,8 +82,28 @@ autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
+  # Укажите 0, чтобы не добавлять эту resource-метрику в HPA
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+  # Доп. метрики (Resource/Pod/Object/External/ContainerResource) — см. autoscaling/v2. Prometheus:
+  # установите адаптер, затем укажите, например, podsMetrics / externalMetrics.
+  # annotations: {}
+  # resourceMetrics: []
+  # podsMetrics: []
+  # objectMetrics: []
+  # externalMetrics: []
+  # containerResourceMetrics: []
+  # additionalMetrics: []
+  # behavior:
+  #   scaleDown:
+  #     stabilizationWindowSeconds: 300
+  #   scaleUp:
+  #     stabilizationWindowSeconds: 0
+  #     selectPolicy: Max
+  #     policies:
+  #       - type: Percent
+  #         value: 100
+  #         periodSeconds: 15
 
 
 nodeSelector: {}
