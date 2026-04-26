@@ -49,3 +49,23 @@ Selector labels
 app.kubernetes.io/name: {{ include "static-proxy.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/* HTTPRoute name for static-proxy (single host, single resource) */}}
+{{- define "static-proxy.httprouteName" -}}
+{{- $root := .root -}}
+{{ include "static-proxy.fullname" $root }}-httproute
+{{- end }}
+
+{{/* Map pathType to gateway.networking.k8s.io path match type */}}
+{{- define "static-proxy.httproutePathMatchType" -}}
+{{- $t := . | default "ImplementationSpecific" -}}
+{{- if or (eq $t "Prefix") (eq $t "ImplementationSpecific") -}}
+PathPrefix
+{{- else if eq $t "Exact" -}}
+Exact
+{{- else if eq $t "RegularExpression" -}}
+RegularExpression
+{{- else -}}
+PathPrefix
+{{- end -}}
+{{- end }}

@@ -60,3 +60,23 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/* Kubernetes Gateway API: name for an HTTPRoute (one per application host) */}}
+{{- define "citadel-common.httprouteName" -}}
+{{- $root := .root }}{{- $app := .app }}{{- $i := .index -}}
+{{ include "citadel-common.fullname" $root }}-{{ $app.name }}-httproute-{{ $i }}
+{{- end }}
+
+{{/* Map Ingress pathType to gateway.networking.k8s.io path match type */}}
+{{- define "citadel-common.httproutePathMatchType" -}}
+{{- $t := . | default "ImplementationSpecific" -}}
+{{- if or (eq $t "Prefix") (eq $t "ImplementationSpecific") -}}
+PathPrefix
+{{- else if eq $t "Exact" -}}
+Exact
+{{- else if eq $t "RegularExpression" -}}
+RegularExpression
+{{- else -}}
+PathPrefix
+{{- end -}}
+{{- end }}

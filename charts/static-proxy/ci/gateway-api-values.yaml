@@ -1,0 +1,9 @@
+# CI / local: render HTTPRoute for static-proxy
+gatewayApi:
+  enabled: true
+  parentRefs:
+    - name: test-gateway
+      namespace: gateway-system
+
+ingress:
+  host: static.example.com

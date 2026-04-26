@@ -1,0 +1,27 @@
+# CI / local: minimal values to render HTTPRoute (Gateway API)
+common:
+  gatewayApi:
+    parentRefs:
+      - name: test-gateway
+        namespace: gateway-system
+
+applications:
+  - name: web
+    replicaCount: 1
+    image:
+      repository: nginx
+      tag: "1.29"
+    service:
+      type: ClusterIP
+      port: 80
+    gatewayApi:
+      enabled: true
+      hosts:
+        - host: app.example.com
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+        - host: api.example.com
+          paths:
+            - path: /v1
+              pathType: Prefix
