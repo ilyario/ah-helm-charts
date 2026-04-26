@@ -1,0 +1,45 @@
+{{- range .Values.applications }}
+{{- if and .prometheusRule .prometheusRule.enabled }}
+{{- $def := .prometheusRule.defaultRules | default (dict) }}
+{{- $td := $def.targetDown | default (dict) }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}-alerts
+  labels:
+    {{- include "citadel-common.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ .name }}
+    role: alert-rules
+    {{- with .prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .prometheusRule.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    {{- with .prometheusRule.additionalGroups }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if ne (default true $td.enabled) false }}
+    - name: {{ .name }}-http-target
+      rules:
+        - alert: KubeHttpTargetDown
+          annotations:
+            summary: "HTTP-таргет приложения «{{ .name }}» в namespace {{ $.Release.Namespace }} недоступен для скрейпинга"
+            description: "Метрика up для сервиса `{{ include "citadel-common.fullname" $ }}-{{ .name }}` равна 0 (или тайм-аут) дольше порога."
+          expr: |
+            up{
+              namespace="{{ $.Release.Namespace }}",
+              service="{{ include "citadel-common.fullname" $ }}-{{ .name }}"
+            } == 0
+          for: {{ default "5m" $td.for }}
+          labels:
+            severity: {{ default "critical" $td.severity }}
+            app: {{ .name | quote }}
+            release: {{ $.Release.Name | quote }}
+    {{- end }}
+{{- end }}
+{{- end }}

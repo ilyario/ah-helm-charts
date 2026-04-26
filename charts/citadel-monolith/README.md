@@ -164,7 +164,8 @@ applications:
       interval: 30s
       scrapeTimeout: 10s
       path: /metrics
-      port: http
+      # Must match the port name on the Service (default: http-<app name>, e.g. http-web)
+      portName: http-web
       labels:
         release: prometheus
       annotations: {}
@@ -178,10 +179,30 @@ applications:
       interval: 15s
       scrapeTimeout: 5s
       path: /api/metrics
-      port: http
+      portName: http-api
       labels:
         release: prometheus
         app: api
+```
+
+### Alertmanager: PrometheusRule
+
+The chart can render a `PrometheusRule` (consumed by Prometheus Operator and evaluated by Alertmanager) per application. When `prometheusRule.enabled` is `true`, a default alert **KubeHttpTargetDown** is included unless you disable it under `defaultRules.targetDown.enabled`. It fires when the `up` series for the application Service is 0. You can add more rule groups with `additionalGroups` (full YAML for `spec.groups` entries).
+
+```yaml
+applications:
+  - name: web
+    service: { type: ClusterIP, port: 8000 }
+    serviceMonitor: { enabled: true, path: /metrics, interval: 30s, scrapeTimeout: 10s, portName: http-web, labels: { release: prometheus } }
+    prometheusRule:
+      enabled: true
+      labels: { release: prometheus }
+      defaultRules:
+        targetDown:
+          enabled: true
+          for: 5m
+          severity: critical
+      additionalGroups: []
 ```
 
 ### Health Checks
@@ -294,7 +315,7 @@ applications:
     startupProbe:
       httpGet:
         path: /health
-        port: http
+        port: http-web
       initialDelaySeconds: 30
       periodSeconds: 10
       timeoutSeconds: 5
@@ -302,17 +323,17 @@ applications:
     livenessProbe:
       httpGet:
         path: /health
-        port: http
+        port: http-web
     readinessProbe:
       httpGet:
         path: /ready
-        port: http
+        port: http-web
     serviceMonitor:
       enabled: true
       interval: 30s
       scrapeTimeout: 10s
       path: /metrics
-      port: http
+      portName: http-web
       labels:
         release: prometheus
 ```
