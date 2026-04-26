@@ -1,6 +1,15 @@
+{{- $croot := .Values.common | default (dict) }}
+{{- $cpr := $croot.prometheusRule | default (dict) }}
 {{- range .Values.applications }}
-{{- if and .prometheusRule .prometheusRule.enabled }}
-{{- $def := .prometheusRule.defaultRules | default (dict) }}
+{{- $apr := .prometheusRule | default (dict) }}
+{{- $pr := mergeOverwrite (deepCopy $cpr) $apr }}
+{{- $cdef := $cpr.defaultRules | default (dict) }}
+{{- $adef := $apr.defaultRules | default (dict) }}
+{{- $def := mergeOverwrite (deepCopy $cdef) $adef }}
+{{- $cag := $cpr.additionalGroups | default (list) }}
+{{- $aag := $apr.additionalGroups | default (list) }}
+{{- $additionalGroups := concat $cag $aag }}
+{{- if default false (index $pr "enabled") }}
 {{- $td := $def.targetDown | default (dict) }}
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -11,16 +20,16 @@ metadata:
     {{- include "citadel-common.labels" $ | nindent 4 }}
     app.kubernetes.io/component: {{ .name }}
     role: alert-rules
-    {{- with .prometheusRule.labels }}
+    {{- with (index $pr "labels") }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with .prometheusRule.annotations }}
+  {{- with (index $pr "annotations") }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   groups:
-    {{- with .prometheusRule.additionalGroups }}
+    {{- with $additionalGroups }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
     {{- if ne (default true $td.enabled) false }}

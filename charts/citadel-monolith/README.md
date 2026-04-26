@@ -52,6 +52,8 @@ helm install my-citadel ah-helm-charts/citadel-monolith --namespace my-namespace
 | `fullnameOverride` | Override the full name | `""` |
 | `common.environment` | Environment (dev, staging, prod) | `dev` |
 | `common.grafana` | Grafana URL for monitoring | `""` |
+| `common.serviceMonitor` | Default `ServiceMonitor` options for all apps (merged with per-app; per-app wins) | see `values.yaml` |
+| `common.prometheusRule` | Default `PrometheusRule` options (merged; `additionalGroups` from common and app are concatenated) | see `values.yaml` |
 
 ### Application configuration
 
@@ -149,9 +151,11 @@ helm get values my-citadel
 
 ## Monitoring
 
+You can set **`common.serviceMonitor`** and **`common.prometheusRule`** once for the release; each app entry under `applications` is **merged** on top (`mergeOverwrite`). `enabled: false` in the app can turn off that app even if `common` has `enabled: true`. For `PrometheusRule`, **`additionalGroups`** from `common` and from the app are **concatenated** (common first, then app); **`defaultRules`** are **deep-merged** (per-app `targetDown` overrides common).
+
 ### Prometheus ServiceMonitor
 
-The chart supports Prometheus monitoring through ServiceMonitor resources. Each application can have its own ServiceMonitor configuration:
+The chart supports Prometheus monitoring through `ServiceMonitor` resources. Set defaults in `common.serviceMonitor` and override per app:
 
 ```yaml
 applications:
@@ -187,22 +191,27 @@ applications:
 
 ### Alertmanager: PrometheusRule
 
-The chart can render a `PrometheusRule` (consumed by Prometheus Operator and evaluated by Alertmanager) per application. When `prometheusRule.enabled` is `true`, a default alert **KubeHttpTargetDown** is included unless you disable it under `defaultRules.targetDown.enabled`. It fires when the `up` series for the application Service is 0. You can add more rule groups with `additionalGroups` (full YAML for `spec.groups` entries).
+The chart can render a `PrometheusRule` (consumed by Prometheus Operator and evaluated by Alertmanager) per application. Use `common.prometheusRule` for shared labels and `defaultRules`, and set per-app `prometheusRule` to enable or override. When `enabled` is `true`, a default alert **KubeHttpTargetDown** is included unless you disable it under `defaultRules.targetDown.enabled`. It fires when the `up` series for the application Service is 0. You can add more rule groups with `additionalGroups` in `common` and/or per app (concatenated).
 
 ```yaml
+common:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    path: /metrics
+    labels: { release: prometheus }
+  prometheusRule:
+    enabled: true
+    labels: { release: prometheus }
+    defaultRules:
+      targetDown: { for: 5m, severity: critical }
+
 applications:
   - name: web
     service: { type: ClusterIP, port: 8000 }
-    serviceMonitor: { enabled: true, path: /metrics, interval: 30s, scrapeTimeout: 10s, portName: http-web, labels: { release: prometheus } }
-    prometheusRule:
-      enabled: true
-      labels: { release: prometheus }
-      defaultRules:
-        targetDown:
-          enabled: true
-          for: 5m
-          severity: critical
-      additionalGroups: []
+    serviceMonitor: { portName: http-web } # inherits path, interval, etc.
+    prometheusRule: {}
 ```
 
 ### Health Checks

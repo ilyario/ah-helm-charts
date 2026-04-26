@@ -16,6 +16,12 @@ helm template test-citadel-mon charts/citadel-monolith \
   --show-only templates/prometheusrule.yaml \
   --show-only templates/service.yaml
 
+echo "== citadel-monolith: common + per-app merge =="
+helm template test-merge charts/citadel-monolith \
+  -f charts/citadel-monolith/ci/monitoring-merge-values.yaml \
+  --namespace app-test \
+  --show-only templates/servicemonitor.yaml
+
 echo "== static-proxy: gateway API values =="
 helm template test-static charts/static-proxy \
   -f charts/static-proxy/ci/gateway-api-values.yaml \

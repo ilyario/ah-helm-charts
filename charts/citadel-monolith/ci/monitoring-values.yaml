@@ -1,4 +1,21 @@
-# CI: ServiceMonitor + PrometheusRule (Prometheus stack / Alertmanager)
+# CI: ServiceMonitor + PrometheusRule; defaults из common, включение per-app
+common:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    path: /metrics
+    labels:
+      release: prometheus
+  prometheusRule:
+    enabled: true
+    labels:
+      release: prometheus
+    defaultRules:
+      targetDown:
+        for: 5m
+        severity: critical
+
 applications:
   - name: web
     replicaCount: 1
@@ -8,18 +25,5 @@ applications:
     service:
       type: ClusterIP
       port: 80
-    serviceMonitor:
-      enabled: true
-      interval: 30s
-      scrapeTimeout: 10s
-      path: /metrics
-      labels:
-        release: prometheus
-    prometheusRule:
-      enabled: true
-      labels:
-        release: prometheus
-      defaultRules:
-        targetDown:
-          for: 5m
-          severity: critical
+    serviceMonitor: {}
+    prometheusRule: {}

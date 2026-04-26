@@ -1,5 +1,9 @@
+{{- $common := .Values.common | default (dict) }}
+{{- $cmon := $common.serviceMonitor | default (dict) }}
 {{- range .Values.applications }}
-{{- if and .service .serviceMonitor (and .serviceMonitor .serviceMonitor.enabled) }}
+{{- $amon := .serviceMonitor | default (dict) }}
+{{- $sm := mergeOverwrite (deepCopy $cmon) $amon }}
+{{- if and .service (default false (index $sm "enabled")) }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -8,10 +12,10 @@ metadata:
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
     app.kubernetes.io/component: {{ .name }}
-    {{- with .serviceMonitor.labels }}
+    {{- with $sm.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with .serviceMonitor.annotations }}
+  {{- with $sm.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -24,36 +28,36 @@ spec:
       {{- include "citadel-common.selectorLabels" $ | nindent 6 }}
       app.kubernetes.io/component: {{ .name }}
   endpoints:
-    - port: {{ default (printf "http-%s" .name) .serviceMonitor.portName }}
-      path: {{ .serviceMonitor.path }}
-      interval: {{ .serviceMonitor.interval }}
-      scrapeTimeout: {{ .serviceMonitor.scrapeTimeout }}
-      {{- with .serviceMonitor.honorLabels }}
+    - port: {{ default (printf "http-%s" .name) (index $sm "portName") }}
+      path: {{ required (printf "applications.%s: serviceMonitor.path (or common.serviceMonitor.path) is required" .name) $sm.path }}
+      interval: {{ required (printf "applications.%s: serviceMonitor.interval" .name) $sm.interval }}
+      scrapeTimeout: {{ required (printf "applications.%s: serviceMonitor.scrapeTimeout" .name) $sm.scrapeTimeout }}
+      {{- with (index $sm "honorLabels") }}
       honorLabels: {{ . }}
       {{- end }}
-      {{- with .serviceMonitor.honorTimestamps }}
+      {{- with (index $sm "honorTimestamps") }}
       honorTimestamps: {{ . }}
       {{- end }}
-      {{- with .serviceMonitor.relabelings }}
+      {{- with (index $sm "relabelings") }}
       relabelings:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .serviceMonitor.metricRelabelings }}
+      {{- with (index $sm "metricRelabelings") }}
       metricRelabelings:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .serviceMonitor.basicAuth }}
+      {{- with (index $sm "basicAuth") }}
       basicAuth:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .serviceMonitor.bearerTokenSecret }}
+      {{- with (index $sm "bearerTokenSecret") }}
       bearerTokenSecret:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .serviceMonitor.scheme }}
+      {{- with (index $sm "scheme") }}
       scheme: {{ . }}
       {{- end }}
-      {{- with .serviceMonitor.tlsConfig }}
+      {{- with (index $sm "tlsConfig") }}
       tlsConfig:
         {{- toYaml . | nindent 8 }}
       {{- end }}
