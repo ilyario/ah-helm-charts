@@ -58,6 +58,17 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+# Kubernetes Gateway API: HTTPRoute to an existing Gateway (Gateway/GatewayClass deployed separately).
+gatewayApi:
+  enabled: false
+  # If empty, the route uses ingress.host
+  # host: static-proxy.example.com
+  parentRefs: []
+  #  - name: my-gateway
+  #    namespace: istio-system
+  labels: {}
+  annotations: {}
+
 resources: {}
   # limits:
   #   cpu: 100m

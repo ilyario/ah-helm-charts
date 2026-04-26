@@ -23,6 +23,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Install Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: v3.16.2
+
+    - name: Helm chart template tests (HTTPRoute)
+      run: |
+        ./scripts/helm-template-test.sh
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 

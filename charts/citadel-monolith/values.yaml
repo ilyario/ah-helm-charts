@@ -53,6 +53,14 @@ common:
         secretName: client-infisical-secrets
   ingress:
     className: nginx
+  # Kubernetes Gateway API defaults (optional; per-app can override parentRefs).
+  # Cluster-scoped Gateway and GatewayClass are deployed elsewhere; this chart only renders HTTPRoute.
+  gatewayApi:
+    parentRefs: []
+    #  - name: my-gateway
+    #    namespace: istio-system
+    #    group: gateway.networking.k8s.io
+    #    kind: Gateway
 
 cronjobs: []
   # - name: backup
@@ -132,6 +140,21 @@ applications: []
   #     #  - secretName: chart-example-tls
   #     #    hosts:
   #     #      - chart-example.local
+
+  #   # Kubernetes Gateway API: HTTPRoute to an existing Gateway (see templates/httproute.yaml)
+  #   gatewayApi:
+  #     enabled: true
+  #     parentRefs:
+  #       - name: my-gateway
+  #         namespace: istio-system
+  #     # One HTTPRoute per list entry; map pathType as in ingress (Prefix/Exact/... → PathPrefix, etc.)
+  #     hosts:
+  #       - host: app.example.com
+  #         paths:
+  #           - path: /
+  #             pathType: ImplementationSpecific
+  #     labels: {}
+  #     annotations: {}
 
   #   resources:
   #     limits:
