@@ -61,23 +61,6 @@ common:
     #    namespace: istio-system
     #    group: gateway.networking.k8s.io
     #    kind: Gateway
-  # Общие настройки Prometheus/Alertmanager для всех applications (копируются mergeOverwrite с per-app)
-  # serviceMonitor:
-  #   enabled: false
-  #   interval: 30s
-  #   scrapeTimeout: 10s
-  #   path: /metrics
-  #   labels: {}
-  #   annotations: {}
-  # prometheusRule:
-  #   enabled: false
-  #   labels: {}
-  #   annotations: {}
-  #   additionalGroups: []
-  #   defaultRules:
-  #     targetDown:
-  #       for: 5m
-  #       severity: critical
 
 cronjobs: []
   # - name: backup
