@@ -189,12 +189,26 @@ applications: []
   #     credentialsRef:
   #       secretName: client-infisical-secrets
 
-  #   # ServiceMonitor configuration for this application
+  #   # ServiceMonitor (Prometheus Operator) — скрейп метрик с Service
   #   serviceMonitor:
   #     enabled: false
   #     interval: 30s
   #     scrapeTimeout: 10s
   #     path: /metrics
-  #     port: http
+  #     # Имя порта в Service (по умолчанию http-<name приложения>, например http-web)
+  #     portName: http-web
   #     labels: {}
   #     annotations: {}
+  #     # Опционально: relabelings, scheme: https, basicAuth, tlsConfig — см. шаблон servicemonitor.yaml
+  #
+  #   # PrometheusRule (Alertmanager): готовое правило «таргет не отвечает» + свои группы
+  #   prometheusRule:
+  #     enabled: false
+  #     labels: {}
+  #     annotations: {}
+  #     additionalGroups: []
+  #     defaultRules:
+  #       targetDown:
+  #         enabled: true
+  #         for: 5m
+  #         severity: critical
