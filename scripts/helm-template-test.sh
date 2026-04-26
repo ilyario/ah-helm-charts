@@ -21,4 +21,17 @@ helm template test-static charts/static-proxy \
   -f charts/static-proxy/ci/gateway-api-values.yaml \
   --show-only templates/httproute.yaml
 
-echo "OK: Gateway API templates render successfully."
+echo "== citadel-monolith: HPA (metrics + behavior) =="
+helm template test-citadel-hpa charts/citadel-monolith \
+  -f charts/citadel-monolith/ci/hpa-values.yaml \
+  --namespace app-test \
+  --show-only templates/hpa.yaml \
+  --show-only templates/deployment.yaml
+
+echo "== static-proxy: HPA (behavior) =="
+helm template test-static-hpa charts/static-proxy \
+  -f charts/static-proxy/ci/hpa-values.yaml \
+  --show-only templates/hpa.yaml \
+  --show-only templates/deployment.yaml
+
+echo "OK: Gateway API and HPA templates render successfully."

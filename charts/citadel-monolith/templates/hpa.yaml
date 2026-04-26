@@ -4,9 +4,14 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "citadel-common.fullname" $ }}
+  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ .name }}
+  {{- with .autoscaling.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -15,21 +20,43 @@ spec:
   minReplicas: {{ .autoscaling.minReplicas }}
   maxReplicas: {{ .autoscaling.maxReplicas }}
   metrics:
-    {{- if .autoscaling.targetCPUUtilizationPercentage }}
+    {{- with .autoscaling.targetCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ .autoscaling.targetCPUUtilizationPercentage }}
+          averageUtilization: {{ . }}
     {{- end }}
-    {{- if .autoscaling.targetMemoryUtilizationPercentage }}
+    {{- with .autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: {{ .autoscaling.targetMemoryUtilizationPercentage }}
+          averageUtilization: {{ . }}
     {{- end }}
+    {{- with .autoscaling.resourceMetrics }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .autoscaling.podsMetrics }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .autoscaling.objectMetrics }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .autoscaling.externalMetrics }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .autoscaling.containerResourceMetrics }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .autoscaling.additionalMetrics }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}
 {{- end }}
