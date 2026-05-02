@@ -1,0 +1,20 @@
+{{- if .Values.common.grafana.dashboard.enabled }}
+{{- $dash := .Values.common.grafana.dashboard }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ default (printf "%s-sre-dashboard" (include "citadel-common.fullname" .)) $dash.name }}
+  labels:
+    {{- include "citadel-common.labels" . | nindent 4 }}
+    {{- with $dash.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with $dash.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  citadel-sre.json: |
+{{ .Files.Get "files/grafana-dashboards/citadel-sre.json" | nindent 4 }}
+{{- end }}

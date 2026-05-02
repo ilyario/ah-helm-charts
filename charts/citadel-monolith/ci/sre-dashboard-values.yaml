@@ -1,0 +1,7 @@
+# CI: Grafana SRE dashboard ConfigMap (kube-prometheus-stack sidecar)
+common:
+  grafana:
+    dashboard:
+      enabled: true
+      labels:
+        grafana_dashboard: "1"

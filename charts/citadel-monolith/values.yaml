@@ -10,6 +10,20 @@ serviceAccount:
 
 common:
   grafana:
+    # Опционально: ConfigMap с Grafana dashboard (SRE) для sidecar kube-prometheus-stack
+    # Включите common.grafana.dashboard.enabled: true — в namespace релиза появится ConfigMap;
+    # sidecar Grafana (label grafana_dashboard) подхватит JSON. Требуется kube-prometheus-stack
+    # (или аналог) с Prometheus, kube-state-metrics и метриками ingress-nginx при использовании
+    # панелей nginx_ingress_controller_*.
+    dashboard:
+      enabled: false
+      # Имя ConfigMap (по умолчанию: <release>-sre-dashboard)
+      name: ""
+      # Метки для sidecar grafana-sc-dashboard (kube-prometheus-stack): grafana_dashboard: "1"
+      labels:
+        grafana_dashboard: "1"
+      annotations: {}
+
   image:
     repository: nginx
     pullPolicy: IfNotPresent
