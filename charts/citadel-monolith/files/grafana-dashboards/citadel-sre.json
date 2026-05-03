@@ -18,8 +18,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
+  "id": 55,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
@@ -51,6 +51,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -81,8 +82,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -113,11 +113,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -125,7 +126,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (host) (rate(nginx_ingress_controller_requests{namespace=~\"$ingress_controller_namespace\"}[5m]))",
+          "expr": "sum by (host) (rate(nginx_ingress_controller_requests{host=\"$ingress_controller_namespace\"}[5m]))",
           "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
@@ -151,6 +152,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -181,8 +183,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -213,11 +214,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -225,19 +227,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (ingress) (rate(nginx_ingress_controller_requests{namespace=~\"$ingress_controller_namespace\"}[5m]))",
-          "legendFormat": "{{ingress}}",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "sum by (service) (rate(nginx_ingress_controller_requests{namespace=~\"$ingress_controller_namespace\"}[5m]))",
-          "legendFormat": "{{service}}",
+          "expr": "sum by (exported_service, path) (rate(nginx_ingress_controller_requests{host=~\"$ingress_controller_namespace\"}[5m]))",
+          "legendFormat": "{{exported_service}} - {{path}}",
           "range": true,
           "refId": "B"
         }
@@ -262,6 +253,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -292,8 +284,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -324,11 +315,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -336,8 +328,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=~\"$ingress_controller_namespace\"}[5m])) by (le))",
-          "legendFormat": "p50",
+          "expr": "histogram_quantile(0.50, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{exported_namespace=\"$namespace\"}[5m])) by (le, exported_service, path))",
+          "legendFormat": "{{exported_service}} - {{path}} - p50",
           "range": true,
           "refId": "A"
         },
@@ -347,8 +339,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=~\"$ingress_controller_namespace\"}[5m])) by (le))",
-          "legendFormat": "p95",
+          "expr": "histogram_quantile(0.95, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{exported_namespace=\"$namespace\"}[5m])) by (le, exported_service, path))",
+          "legendFormat": "{{exported_service}} - {{path}} - p95",
           "range": true,
           "refId": "B"
         },
@@ -358,8 +350,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=~\"$ingress_controller_namespace\"}[5m])) by (le))",
-          "legendFormat": "p99",
+          "expr": "histogram_quantile(0.99, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le, exported_service, path))",
+          "legendFormat": "{{exported_service}} - {{path}} - p99",
           "range": true,
           "refId": "C"
         }
@@ -384,6 +376,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -414,8 +407,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -446,11 +438,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -458,7 +451,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(nginx_ingress_controller_requests{namespace=~\"$ingress_controller_namespace\",status=~\"4..\"}[5m]))",
+          "expr": "sum(rate(nginx_ingress_controller_requests{exported_namespace=\"$namespace\",status=~\"4..\"}[5m])) by (exported_service)",
           "legendFormat": "4xx",
           "range": true,
           "refId": "A"
@@ -469,7 +462,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(nginx_ingress_controller_requests{namespace=~\"$ingress_controller_namespace\",status=~\"5..\"}[5m]))",
+          "expr": "sum(rate(nginx_ingress_controller_requests{exported_namespace=\"$namespace\",status=~\"5..\"}[5m])) by (exported_service)",
           "legendFormat": "5xx",
           "range": true,
           "refId": "B"
@@ -485,352 +478,6 @@
         "w": 24,
         "x": 0,
         "y": 17
-      },
-      "id": 101,
-      "panels": [],
-      "title": "Приложение (namespace релиза)",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "reqps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 18
-      },
-      "id": 5,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "sum by (job) (rate(http_requests_total{namespace=\"$namespace\"}[5m]))",
-          "legendFormat": "http_requests_total",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "sum by (job) (rate(http_server_requests_total{namespace=\"$namespace\"}[5m]))",
-          "legendFormat": "http_server_requests_total",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "RPS по job (http_requests_total / http_server)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 18
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{namespace=\"$namespace\"}[5m])) by (le, job))",
-          "legendFormat": "http_request_duration_seconds",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_duration_seconds_bucket{namespace=\"$namespace\"}[5m])) by (le, job))",
-          "legendFormat": "http_server_duration_seconds",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "Latency приложения p95 (histogram)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "reqps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 26
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "sum(rate(http_requests_total{namespace=\"$namespace\",status=~\"5..\"}[5m]))",
-          "legendFormat": "5xx",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "sum(rate(http_requests_total{namespace=\"$namespace\",status=~\"4..\"}[5m]))",
-          "legendFormat": "4xx",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "4xx / 5xx приложение (http_requests_total)",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 34
       },
       "id": 102,
       "panels": [],
@@ -854,6 +501,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -884,8 +532,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -901,7 +548,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 35
+        "y": 18
       },
       "id": 8,
       "options": {
@@ -916,11 +563,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -928,7 +576,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (pod) (kube_pod_container_status_restarts_total{namespace=\"$namespace\"})",
+          "expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{namespace=\"appraiser-help\"}[5m]))",
           "legendFormat": "{{pod}}",
           "range": true,
           "refId": "A"
@@ -954,6 +602,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -984,8 +633,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1001,7 +649,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 35
+        "y": 18
       },
       "id": 9,
       "options": {
@@ -1016,11 +664,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -1028,7 +677,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (pod) (rate(container_cpu_cfs_throttled_seconds_total{namespace=\"$namespace\", container!=\"\"}[5m]))",
+          "expr": "sum by (pod) (rate(container_cpu_cfs_throttled_periods_total{namespace=\"$namespace\", container!=\"\"}[5m]))",
           "legendFormat": "{{pod}}",
           "range": true,
           "refId": "A"
@@ -1054,6 +703,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -1084,8 +734,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1095,13 +744,38 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "appraiser-help-web-68b8999754-jhtq2"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 43
+        "y": 26
       },
       "id": 10,
       "options": {
@@ -1116,11 +790,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -1129,7 +804,7 @@
           },
           "editorMode": "code",
           "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", container!=\"POD\", container!=\"\"}[5m]))",
-          "legendFormat": "usage",
+          "legendFormat": "{{container}}",
           "range": true,
           "refId": "A"
         },
@@ -1140,12 +815,13 @@
           },
           "editorMode": "code",
           "expr": "sum by (pod) (kube_pod_container_resource_requests{namespace=\"$namespace\", resource=\"cpu\", container!=\"POD\", container!=\"\"})",
+          "hide": true,
           "legendFormat": "requests",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "CPU: usage vs requests (cores)",
+      "title": "CPU: usage (cores)",
       "type": "timeseries"
     },
     {
@@ -1165,6 +841,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -1195,8 +872,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1212,7 +888,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 43
+        "y": 26
       },
       "id": 11,
       "options": {
@@ -1227,11 +903,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -1240,7 +917,7 @@
           },
           "editorMode": "code",
           "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"$namespace\", container!=\"POD\", container!=\"\"})",
-          "legendFormat": "workingset",
+          "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
         },
@@ -1251,12 +928,13 @@
           },
           "editorMode": "code",
           "expr": "sum by (pod) (kube_pod_container_resource_limits{namespace=\"$namespace\", resource=\"memory\", container!=\"POD\", container!=\"\"})",
-          "legendFormat": "limit",
+          "hide": true,
+          "legendFormat": "{{instance}} - limit",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Memory: working set vs limit",
+      "title": "Memory: working set",
       "type": "timeseries"
     },
     {
@@ -1276,6 +954,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -1306,8 +985,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1323,7 +1001,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 51
+        "y": 34
       },
       "id": 12,
       "options": {
@@ -1338,11 +1016,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -1387,6 +1066,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -1417,8 +1097,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1434,7 +1113,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 51
+        "y": 34
       },
       "id": 13,
       "options": {
@@ -1449,11 +1128,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -1520,6 +1200,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -1550,8 +1231,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1567,7 +1247,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 58
+        "y": 41
       },
       "id": 14,
       "options": {
@@ -1582,11 +1262,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -1620,6 +1301,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
@@ -1650,8 +1332,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1667,7 +1348,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 58
+        "y": 41
       },
       "id": 15,
       "options": {
@@ -1682,11 +1363,12 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -1744,8 +1426,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -1756,7 +1437,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 65
+        "y": 48
       },
       "id": 16,
       "options": {
@@ -1771,7 +1452,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "datasource": {
@@ -1806,28 +1487,34 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 73
+        "y": 56
       },
       "id": 999,
       "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
         "content": "**SRE-дашборд Citadel (Helm).** Ingress: метрики `nginx_ingress_controller_*` (ingress-nginx). При другом ingress замените запросы. Приложение: типичные метрики Prometheus/OpenTelemetry. Кластер: kube-state-metrics + cAdvisor. SLI по доступности: правило `up` для ServiceMonitor (PrometheusRule в чарте).",
         "mode": "markdown"
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "11.6.1",
       "title": "Примечания",
       "type": "text"
     }
   ],
+  "preload": false,
   "refresh": "30s",
-  "schemaVersion": 39,
+  "schemaVersion": 41,
   "tags": [
     "citadel",
     "kubernetes",
@@ -1837,11 +1524,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
           "text": "Prometheus",
-          "value": "Prometheus"
+          "value": "prometheus"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Datasource",
         "name": "datasource",
@@ -1854,19 +1539,18 @@
       {
         "allValue": ".*",
         "current": {
-          "selected": false,
-          "text": "",
-          "value": ""
+          "text": "appraiser-help",
+          "value": "appraiser-help"
         },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
         "definition": "label_values(kube_pod_info, namespace)",
-        "hide": 0,
         "includeAll": false,
         "label": "Namespace",
         "name": "namespace",
+        "options": [],
         "query": {
           "query": "label_values(kube_pod_info, namespace)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
@@ -1878,25 +1562,31 @@
       },
       {
         "current": {
-          "selected": true,
-          "text": "ingress-nginx",
-          "value": "ingress-nginx"
+          "text": "appraiser-help.ru",
+          "value": "appraiser-help.ru"
         },
-        "hide": 0,
+        "definition": "label_values(kube_ingress_path{namespace=\"$namespace\"},host)",
         "label": "Ingress controller NS",
         "name": "ingress_controller_namespace",
-        "query": "ingress-nginx",
-        "skipUrlSync": false,
-        "type": "textbox"
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kube_ingress_path{namespace=\"$namespace\"},host)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-15m",
     "to": "now"
   },
+  "timepicker": {},
   "timezone": "browser",
   "title": "Citadel — SRE dashboard",
   "uid": "citadel-sre-release",
-  "version": 1
+  "version": 3
 }
