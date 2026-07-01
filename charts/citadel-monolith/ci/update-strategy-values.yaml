@@ -1,0 +1,23 @@
+# CI: стратегии обновления Deployment (recreate / rollingUpdate)
+applications:
+  - name: recreate-app
+    replicaCount: 1
+    updateStrategy: recreate
+    image:
+      repository: nginx
+      tag: "1.29"
+    service:
+      type: ClusterIP
+      port: 80
+  - name: rolling-app
+    replicaCount: 2
+    updateStrategy: rollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+    image:
+      repository: nginx
+      tag: "1.29"
+    service:
+      type: ClusterIP
+      port: 80

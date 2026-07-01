@@ -18,6 +18,21 @@ spec:
   {{- if not (and .autoscaling .autoscaling.enabled) }}
   replicas: {{ .replicaCount }}
   {{- end }}
+  {{- if .updateStrategy }}
+  {{- $strategyType := .updateStrategy | lower }}
+  strategy:
+    {{- if eq $strategyType "recreate" }}
+    type: Recreate
+    {{- else if eq $strategyType "rollingupdate" }}
+    type: RollingUpdate
+    {{- with .rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- else }}
+    {{- fail (printf "application %q: updateStrategy must be recreate or rollingUpdate, got %q" .name .updateStrategy) }}
+    {{- end }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "citadel-common.selectorLabels" $ | nindent 6 }}

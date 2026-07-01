@@ -40,4 +40,11 @@ helm template test-static-hpa charts/static-proxy \
   --show-only templates/hpa.yaml \
   --show-only templates/deployment.yaml
 
+echo "== citadel-monolith: update strategy (recreate / rollingUpdate) =="
+helm template test-citadel-strategy charts/citadel-monolith \
+  -f charts/citadel-monolith/ci/update-strategy-values.yaml \
+  --namespace app-test \
+  --show-only templates/deployment.yaml
+python3 scripts/test_citadel_update_strategy.py
+
 echo "OK: Gateway API and HPA templates render successfully."
