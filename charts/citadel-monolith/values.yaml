@@ -129,6 +129,11 @@ jobs: []
 applications: []
   # - name: nginx
   #   replicaCount: 1
+  #   # recreate | rollingUpdate (по умолчанию — RollingUpdate в Kubernetes)
+  #   updateStrategy: rollingUpdate
+  #   # rollingUpdate:
+  #   #   maxUnavailable: 0
+  #   #   maxSurge: 1
   #   env: []
   #   image:
   #     repository: nginx

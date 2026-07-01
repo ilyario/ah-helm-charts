@@ -61,6 +61,11 @@ The chart supports deploying multiple applications. Each application can have:
 applications:
   - name: nginx
     replicaCount: 1
+    # recreate | rollingUpdate (omit for Kubernetes default RollingUpdate)
+    updateStrategy: rollingUpdate
+    # rollingUpdate:
+    #   maxUnavailable: 0
+    #   maxSurge: 1
     image:
       repository: nginx
       tag: "latest"
