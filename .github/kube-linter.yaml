@@ -1,0 +1,28 @@
+---
+# kube-linter configuration for CI (.github/workflows/lint-test.yml).
+#
+# High-signal checks are enabled; hygiene checks that require the P1 backlog
+# (security contexts, default resources, probes in CI fixture values) are not
+# enabled yet and should be turned on as those defaults land in the charts.
+# See docs on the supported keys: https://docs.kubelinter.io
+checks:
+  doNotAutoAddDefaults: true
+  include:
+    # Service/pod selector mismatch and unreachable services - the exact class
+    # of bug fixed by component-aware selectors; keep guardrails on.
+    - dangling-service
+    - mismatching-selector
+    # Pin every container image tag
+    - latest-tag
+    # Explicit strategy for multi-replica Deployments
+    - no-rolling-update-strategy
+    # Invalid spec.serviceAccountName (deprecated spec.serviceAccount)
+    - deprecated-service-account-field
+    # No privileged containers
+    - privileged-container
+
+# TODO(P1): enable set once charts ship safe defaults:
+#   run-as-non-root, privilege-escation-container, no-read-only-root-fs,
+#   unset-cpu-requirements, unset-memory-requirements, no-liveness-probe,
+#   no-readiness-probe, minimum-three-replicas, missing-pod-antiaffinity,
+#   default-service-account

@@ -1,0 +1,95 @@
+name: Lint and Test Charts
+
+# PR CI: helm lint, chart-testing (ct lint), kube-linter, template smoke tests.
+# helm-unittest is wired in as an optional step, enabled once test suites exist.
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'charts/**'
+      - 'scripts/**'
+      - '.github/ct.yaml'
+      - '.github/lintconf.yaml'
+      - '.github/kube-linter.yaml'
+      - '.github/workflows/lint-test.yml'
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          # Keep in sync with .github/workflows/docker-build.yml and update-repo.yaml
+          version: v4.2.4
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.7.0
+
+      - name: Detect changed charts
+        id: list-changed
+        run: |
+          changed="$(ct list-changed --config .github/ct.yaml --target-branch main)"
+          if [ -n "$changed" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Changed charts: $changed"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No chart changes detected"
+          fi
+
+      - name: Run helm lint
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          for chart in $(ct list-changed --config .github/ct.yaml --target-branch main); do
+            helm lint "$chart"
+          done
+
+      - name: Run chart-testing lint
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct lint --config .github/ct.yaml
+
+      - name: Run kube-linter
+        if: steps.list-changed.outputs.changed == 'true'
+        uses: stackrox/kube-linter-action@v1
+        with:
+          directory: charts
+          config: .github/kube-linter.yaml
+
+      - name: Run helm template smoke tests
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ./scripts/helm-template-test.sh
+
+      - name: Run python chart tests
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          python3 scripts/test_citadel_update_strategy.py
+          python3 scripts/test_citadel_sre_dashboard.py
+
+      - name: Run dns-label tests
+        if: steps.list-changed.outputs.changed == 'true'
+        run: bash charts/citadel-monolith/tests/run-dns-label-test.sh
+
+      # Optional: enable when helm-unittest suites are added under charts/*/tests/*_test.yaml
+      - name: Run helm-unittest
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          if compgen -G 'charts/*/tests/*_test.yaml' > /dev/null; then
+            helm plugin install https://github.com/helm-unittest/helm-unittest.git
+            helm unittest charts/*/tests/*_test.yaml
+          else
+            echo "No helm-unittest suites found - skipping (add charts/*/tests/*_test.yaml to enable)"
+          fi
+
+      # Runs when charts/*/README.md is helm-docs generated (no-op/check-skipped otherwise);
+      # see docs in .github/scripts/helm-docs-check.sh
+      - name: helm-docs drift check
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          chmod +x .github/scripts/helm-docs-check.sh
+          .github/scripts/helm-docs-check.sh

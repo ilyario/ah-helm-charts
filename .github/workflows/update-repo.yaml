@@ -1,0 +1,48 @@
+name: Update Helm Repository
+
+# Packages all charts and commits packages/*.tgz + index.yaml back to main on
+# every push that changes chart sources. GitHub Pages serves them from main.
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'charts/**'
+      - '.github/workflows/update-repo.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          # Keep in sync with .github/workflows/lint-test.yml and docker-build.yml
+          version: v4.2.4
+
+      - name: Package charts and regenerate index
+        run: |
+          mkdir -p packages
+          for chart in charts/*/; do
+            helm package "$chart" --destination packages
+          done
+          helm repo index . --merge index.yaml --url https://ilyario.github.io/ah-helm-charts
+
+      - name: Commit and push
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git add index.yaml packages/*.tgz
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit --no-verify -m "Update Helm repository index"
+            git push
+          fi

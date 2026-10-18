@@ -2,20 +2,36 @@ apiVersion: v2
 name: citadel
 description: A Helm chart for deploying monolithic applications in Kubernetes with enhanced security, monitoring, and configuration management
 type: application
-version: 0.2.7
+version: 0.2.8
 appVersion: "1.0.0"
-keywords:
-  - kubernetes
-  - helm
-  - deployment
-  - monolithic
-  - monitoring
+kubeVersion: ">=1.23.0-0"
 home: https://github.com/ilyario/ah-helm-charts
 sources:
   - https://github.com/ilyario/ah-helm-charts
 maintainers:
   - name: Ilya Ponomarev
     email: ponomarevid@ya.ru
+keywords:
+  - kubernetes
+  - helm
+  - deployment
+  - monolithic
+  - monitoring
+  - infisical
+  - prometheus
+icon: https://raw.githubusercontent.com/ilyario/ah-helm-charts/main/docs/assets/citadel-icon.svg
 annotations:
   category: Application
   licenses: MIT
+  artifacthub.io/links: |
+    - name: source
+      url: https://github.com/ilyario/ah-helm-charts
+    - name: support
+      url: https://github.com/ilyario/ah-helm-charts/issues
+  artifacthub.io/changes: |
+    - kind: added
+      description: kubeVersion constraint, icon and artifacthub.io annotations
+    - kind: added
+      description: values documentation in chart README generated with helm-docs
+    - kind: added
+      description: PR CI with helm lint, chart-testing (ct lint) and kube-linter

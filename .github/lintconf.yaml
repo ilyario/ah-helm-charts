@@ -1,0 +1,12 @@
+---
+# Relaxed yamllint config for chart templates (long comment blocks, template braces).
+extends: default
+
+rules:
+  line-length: disable
+  truthy: disable
+  comments: disable
+  comments-indentation: disable
+  document-start: disable
+  empty-lines:
+    max: 2

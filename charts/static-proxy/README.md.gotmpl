@@ -1,0 +1,62 @@
+{{ template "chart.badgesSection" . }}
+
+NGINX-based static-file proxy: routes URL paths to S3-compatible object storage
+or other upstreams via plain values.yaml. Renders a Deployment, Service and
+optionally Ingress and HPA.
+
+## Features
+
+- Locations declared from values: `config.targets` maps `target` (URL path) to `source` (upstream URL) with raw nginx `annotations` directives per location
+- Chart-managed nginx ConfigMap (`default.conf`) built from `config.targets`
+- Ingress with optional TLS (single `spec.tls` block, `hosts` from `ingress.tls`)
+- HorizontalPodAutoscaler via `autoscaling.enabled`
+
+## Requirements
+
+- Kubernetes 1.23+ (enforced via `kubeVersion: ">=1.23.0-0"`)
+- Helm 3.0+ (Helm 4 works as well)
+- Optional: an ingress controller; Prometheus metrics-server for HPA
+
+## Installation
+
+```bash
+helm repo add ah-helm https://ilyario.github.io/ah-helm-charts
+helm repo update
+
+# From the published repo
+helm install my-static-proxy ah-helm/static-proxy -f my-values.yaml
+
+# Or straight from a git checkout
+helm install my-static-proxy ./charts/static-proxy -f my-values.yaml
+```
+
+## Example config
+
+```yaml
+config:
+  targets:
+    - target: /storage/file
+      pathType: ImplementationSpecific
+      source: https://storage.yandexcloud.net/bucket/file.pdf
+      annotations: |
+        proxy_redirect     off;
+        proxy_hide_header Content-Type;
+        add_header Content-Type application/pdf;
+        add_header Content-Disposition "inline";
+
+ingress:
+  enabled: true
+  hosts:
+    - host: static.example.com
+      paths:
+        - path: /storage(/|$)(.*)
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: static-tls
+      hosts:
+        - static.example.com
+```
+
+## Values
+
+{{ template "chart.valuesSection" . }}

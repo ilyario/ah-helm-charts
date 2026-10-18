@@ -1,4 +1,6 @@
+# -- NGINX proxy locations: `target` — URL path to serve, `source` — upstream, `annotations` — raw nginx location directives applied inside `location` block
 config:
+  # -- List of proxy locations; `pathType` maps to the nginx location modifier
   targets:
     - target: /storage/file
       pathType: ImplementationSpecific
@@ -27,49 +29,74 @@ config:
         proxy_send_timeout         30;
         proxy_read_timeout         30;
 
+# -- Number of proxy replicas
 replicaCount: 3
 
+# -- Proxy container image
 image:
+  # -- Registry/repo of the proxy image
   repository: nginx
+  # -- Kubernetes pull policy
   pullPolicy: IfNotPresent
+  # -- Image tag (falls back to Chart.appVersion when empty)
   tag: "1.29"
 
+# -- Registry pull secrets for the proxy image
 imagePullSecrets: []
+# -- Short chart name override (defaults to chart name)
 nameOverride: ""
+# -- Full resource name override (defaults to release+chart name)
 fullnameOverride: ""
 
+# -- Extra annotations on the proxy pod template
 podAnnotations: {}
+# -- Extra labels on the proxy pod template
 podLabels: {}
+# -- Pod-level security context
 podSecurityContext: {}
 
+# -- Container security context
 securityContext: {}
+# -- Proxy Service
 service:
   type: ClusterIP
+  # -- Service port
   port: 80
 
+# -- Ingress for the proxy (host covers all config.targets)
 ingress:
+  # -- Render the Ingress resource
   enabled: true
+  # -- Ingress host
   host: static-proxy.example.com
+  # -- Ingress class
   className: "nginx"
+  # -- Extra Ingress annotations
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+  # -- TLS entries (single spec.tls block in the rendered Ingress)
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
-# Kubernetes Gateway API: HTTPRoute to an existing Gateway (Gateway/GatewayClass deployed separately).
+# -- Gateway API: HTTPRoute to an existing Gateway (Gateway/GatewayClass deployed separately).
 gatewayApi:
+  # -- Render the HTTPRoute resource
   enabled: false
   # If empty, the route uses ingress.host
   # host: static-proxy.example.com
+  # -- Gateway API parentRefs
   parentRefs: []
   #  - name: my-gateway
   #    namespace: istio-system
+  # -- Extra HTTPRoute labels
   labels: {}
+  # -- Extra HTTPRoute annotations
   annotations: {}
 
+# -- Container resources for the proxy
 resources: {}
   # limits:
   #   cpu: 100m
@@ -79,7 +106,9 @@ resources: {}
   #   memory: 128Mi
 
 
+# -- HorizontalPodAutoscaler for the proxy
 autoscaling:
+  # -- Render the HPA (overrides replicaCount)
   enabled: false
   minReplicas: 1
   maxReplicas: 100
@@ -107,8 +136,11 @@ autoscaling:
   #         periodSeconds: 15
 
 
+# -- Node selector for proxy pods
 nodeSelector: {}
 
+# -- Tolerations for proxy pods
 tolerations: []
 
+# -- Node affinity for proxy pods
 affinity: {}

@@ -3,6 +3,9 @@ applications:
   - name: recreate-app
     replicaCount: 1
     updateStrategy: recreate
+    # Intentionarily Recreate (stateful-style rollout); kube-linter exempted
+    annotations:
+      ignore-check.kube-linter.io/no-rolling-update-strategy: "Recreate is the intended rollout mode for this stateful app fixture"
     image:
       repository: nginx
       tag: "1.29"

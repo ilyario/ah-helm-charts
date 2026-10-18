@@ -1,0 +1,18 @@
+---
+# Configuration for helm/chart-testing (ct) - used .github/workflows/lint-test.yml
+chart-dirs:
+  - charts
+
+target-branch: main
+
+# Enforce chart version bumps on every chart change (SemVer)
+check-version-increment: true
+
+# maintainers use real names/emails, not GitHub handles
+validate-maintainers: false
+
+# Validate Chart.yaml against the chart schema
+chart-yaml-schema: .github/chart_schema.yaml
+
+# Relaxed yamllint rules (chart templates produce long lines)
+lint-conf: .github/lintconf.yaml

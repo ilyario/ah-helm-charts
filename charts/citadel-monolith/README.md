@@ -1,31 +1,37 @@
-# Citadel Monolith Helm Chart
+![Version: 0.2.8](https://img.shields.io/badge/Version-0.2.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for deploying monolithic applications in Kubernetes clusters.
 
 ## Description
 
 This Helm chart is designed for deploying monolithic applications with support for:
-- Multiple applications in a single release
+- Multiple applications in a single release, each with its own Service, probes and autoscaling
 - Infisical integration for secret management
-- Automatic scaling (HPA)
-- Ingress configuration
+- Automatic scaling (HPA) with autoscaling/v2 metrics and behavior
+- Ingress configuration and/or Gateway API HTTPRoute
 - Jobs for migrations and other tasks
-- Monitoring through Grafana
+- CronJobs with timeZone, concurrency policy and history limits
+- Shared PVCs and Secrets mounted into all application pods
+- Pod topology spread constraints
 - Startup, liveness and readiness probes
-- Prometheus ServiceMonitor for metrics collection
+- Prometheus ServiceMonitor and PrometheusRule for metrics collection and alerts
+- Explicit Deployment update strategies per application (`recreate` / `rollingUpdate`)
+
+> Note: the chart name is `citadel` (the directory is `citadel-monolith`), so the
+> published package is `citadel-<version>.tgz`.
 
 ## Requirements
 
-- Kubernetes 1.19+
-- Helm 3.0+
-- Ingress controller (e.g., nginx-ingress)
+- Kubernetes 1.23+ (enforced via `kubeVersion: ">=1.23.0-0"`)
+- Helm 3.0+ (Helm 4 works as well)
+- Optional: an ingress controller (e.g. ingress-nginx), Gateway API CRDs and a Gateway, the Prometheus Operator (for `ServiceMonitor`/`PrometheusRule`), Infisical Operator (for secret sync)
 
 ## Installation
 
 ### Adding the repository
 
 ```bash
-helm repo add ah-helm-charts https://your-repo-url
+helm repo add ah-helm https://ilyario.github.io/ah-helm-charts
 helm repo update
 ```
 
@@ -33,25 +39,23 @@ helm repo update
 
 ```bash
 # Basic installation
-helm install my-citadel ah-helm-charts/citadel-monolith
+helm install my-citadel ah-helm/citadel
 
 # Installation with custom values
-helm install my-citadel ah-helm-charts/citadel-monolith -f values.yaml
+helm install my-citadel ah-helm/citadel -f values.yaml
 
 # Installation in a specific namespace
-helm install my-citadel ah-helm-charts/citadel-monolith --namespace my-namespace --create-namespace
+helm install my-citadel ah-helm/citadel --namespace my-namespace --create-namespace
+
+# Or straight from a git checkout of this repository
+helm install my-citadel ./charts/citadel-monolith -f my-values.yaml
 ```
 
+> The container image repository and tag are mandatory for every application, job
+> and cronjob: the chart fails rendering early when the effective image tag is
+> empty, instead of accidentally deploying `repository:`.
+
 ## Configuration
-
-### Main parameters
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `nameOverride` | Override the release name | `""` |
-| `fullnameOverride` | Override the full name | `""` |
-| `common.environment` | Environment (dev, staging, prod) | `dev` |
-| `common.grafana` | Grafana URL for monitoring | `""` |
 
 ### Application configuration
 
@@ -68,7 +72,7 @@ applications:
     #   maxSurge: 1
     image:
       repository: nginx
-      tag: "latest"
+      tag: "1.29"
     service:
       type: ClusterIP
       port: 80
@@ -106,7 +110,9 @@ common:
         secretName: client-infisical-secrets
 ```
 
-### Jobs for migrations
+### Jobs and CronJobs
+
+One-off Jobs (e.g. migrations) are defined at the top level:
 
 ```yaml
 jobs:
@@ -126,12 +132,99 @@ jobs:
         memory: 128Mi
 ```
 
+CronJobs support schedules with time zones, concurrency policy, history limits and pod-level security configuration:
+
+```yaml
+cronjobs:
+  - name: backup
+    enabled: true
+    schedule: "0 2 * * *"
+    timeZone: "UTC"
+    concurrencyPolicy: Forbid
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 1
+    command: ["python"]
+    args: ["manage.py", "backup"]
+    image:
+      repository: your-app
+      tag: "1.0"
+```
+
+### Gateway API (HTTPRoute)
+
+Applications can be exposed through Gateway API in addition to (or instead of) Ingress. `parentRefs` defaults to `common.gatewayApi.parentRefs` and can be overridden per application:
+
+```yaml
+common:
+  gatewayApi:
+    parentRefs:
+      - name: my-gateway
+        namespace: istio-system
+
+applications:
+  - name: web
+    service: { type: ClusterIP, port: 8000 }
+    gatewayApi:
+      enabled: true
+      hosts:
+        - host: myapp.example.com
+          paths:
+            - path: /
+              pathType: PathPrefix
+```
+
+### Shared PVCs, secrets and env
+
+Volumes and secrets declared under `common` are mounted into every application pod:
+
+```yaml
+common:
+  sharedPVCs:
+    - name: static
+      mountPath: /static
+      storageClass: csi-s3
+      size: 10Gi
+      accessModes:
+        - ReadWriteMany
+  sharedSecrets:
+    - my-secret-name
+  env:
+    - name: TZ
+      value: Asia/Irkutsk
+```
+
+### Topology spread constraints
+
+`common.topologySpreadConstraints` applies cluster-wide spreading to all application pods. The `labelSelector.matchLabels.component` value is templated per application, so applications only spread their own pods:
+
+```yaml
+common:
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          component: ""  # substituted with the application dns-safe name
+```
+
+### Service account and private registries
+
+```yaml
+serviceAccount:
+  create: true
+  name: my-app-sa
+
+imagePullSecrets:
+  - name: regcred
+```
+
 ## Usage
 
 ### Updating the release
 
 ```bash
-helm upgrade my-citadel ah-helm-charts/citadel-monolith -f values.yaml
+helm upgrade my-citadel ah-helm/citadel -f values.yaml
 ```
 
 ### Uninstalling the release
@@ -360,3 +453,39 @@ If you encounter issues:
 ## License
 
 This project is licensed under MIT.
+
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| applications | list | `[]` | Long-running applications: each gets Deployment, Service and optional Ingress/HTTPRoute, HPA and monitoring |
+| common | object | `{"affinity":{},"env":[],"environment":"dev","gatewayApi":{"parentRefs":[]},"grafana":{"dashboard":{"annotations":{},"enabled":false,"labels":{"grafana_dashboard":"1"},"name":""}},"image":{"pullPolicy":"IfNotPresent","repository":"nginx","tag":""},"imagePullSecrets":[],"infisical":{"commonSecret":{"credentialsRef":{"secretName":"client-infisical-secrets"},"enabled":false,"projectSlug":"","secretsPath":"/"},"enabled":false,"resyncInterval":10,"url":"http://infisical-standalone-infisical.infisical.svc.cluster.local:8080/api"},"ingress":{"className":"nginx"},"nodeSelector":{},"sharedPVCs":[],"sharedSecrets":[],"tolerations":[],"topologySpreadConstraints":[{"labelSelector":{"matchLabels":{"component":""}},"maxSkew":1,"topologyKey":"topology.kubernetes.io/zone","whenUnsatisfiable":"ScheduleAnyway"}]}` | Shared settings for all applications (scheduling, env, storage, secrets, image, gateway) |
+| common.affinity | object | `{}` | Node affinity applied to all application pods |
+| common.env | list | `[]` | Extra environment variables for every application container |
+| common.environment | string | `"dev"` | Logical environment (dev/staging/prod), used in labels/annotations |
+| common.gatewayApi | object | `{"parentRefs":[]}` | Cluster-scoped Gateway/GatewayClass live elsewhere; the chart only renders HTTPRoutes |
+| common.grafana.dashboard.enabled | bool | `false` | Render the SRE Grafana dashboard ConfigMap (kube-prometheus-stack sidecar picks it up) |
+| common.image | object | `{"pullPolicy":"IfNotPresent","repository":"nginx","tag":""}` | Default container image for applications/jobs/cronjobs without their own image |
+| common.image.pullPolicy | string | `"IfNotPresent"` | Kubernetes pull policy for the default image |
+| common.image.repository | string | `"nginx"` | Registry/repo of the default image |
+| common.image.tag | string | `""` | Required: rendering fails when the effective tag is empty |
+| common.imagePullSecrets | list | `[]` | Registry pull secrets for the default image |
+| common.infisical | object | `{"commonSecret":{"credentialsRef":{"secretName":"client-infisical-secrets"},"enabled":false,"projectSlug":"","secretsPath":"/"},"enabled":false,"resyncInterval":10,"url":"http://infisical-standalone-infisical.infisical.svc.cluster.local:8080/api"}` | Infisical ExternalSecret sync (requires the Infisical operator CRDs) |
+| common.infisical.commonSecret | object | `{"credentialsRef":{"secretName":"client-infisical-secrets"},"enabled":false,"projectSlug":"","secretsPath":"/"}` | Shared secret store for all applications in the release |
+| common.infisical.commonSecret.projectSlug | string | `""` | Infisical project slug to sync secrets from |
+| common.infisical.resyncInterval | int | `10` | External Secrets resync interval in seconds |
+| common.infisical.url | string | `"http://infisical-standalone-infisical.infisical.svc.cluster.local:8080/api"` | Infisical API URL |
+| common.ingress | object | `{"className":"nginx"}` | Ingress class for per-application Ingress resources |
+| common.nodeSelector | object | `{}` | Node selector applied to all application pods |
+| common.sharedPVCs | list | `[]` | PVCs provisioned in the release namespace and mounted into every application pod |
+| common.sharedSecrets | list | `[]` | Pre-existing Secrets mounted into every application pod |
+| common.tolerations | list | `[]` | Tolerations applied to all application pods |
+| cronjobs | list | `[]` | CronJobs with schedule/timeZone/concurrency policy and history limits; empty image tag fails rendering |
+| fullnameOverride | string | `""` | Full resource name override (defaults to release+chart name) |
+| imagePullSecrets | list | `[]` | Secret refs for private registries, e.g. `[{name: regcred}]` |
+| jobs | list | `[]` | One-off Jobs (migrations etc.); empty image tag fails rendering |
+| nameOverride | string | `""` | Short chart name override (defaults to chart name) |
+| serviceAccount | object | `{"annotations":{},"automount":true,"create":false,"name":""}` | Service account for the rendered resources |
+| serviceAccount.automount | bool | `true` | Automatically mount the ServiceAccount token inside pods |
+| serviceAccount.create | bool | `false` | Create a ServiceAccount and attach it to rendered workloads |
+| serviceAccount.name | string | `""` | ServiceAccount name (defaults to <fullname>) |
