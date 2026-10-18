@@ -27,6 +27,7 @@ common:
   image:
     repository: nginx
     pullPolicy: IfNotPresent
+    # Required: rendering fails when the effective tag is empty
     tag: ""
   environment: dev
   nodeSelector: {}

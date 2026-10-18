@@ -1,11 +1,12 @@
 {{ $common := .Values.common }}
 {{- range $job := .Values.jobs }}
 {{- if $job.enabled }}
+{{- $jobSafe := include "citadel-common.dnsLabel" .name }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "citadel-common.fullname" $ }}-job-{{ .name }}
+  name: {{ include "citadel-common.fullname" $ }}-job-{{ $jobSafe }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
     app.kubernetes.io/component: {{ .name }}
@@ -46,7 +47,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ $.Chart.Name }}-{{ .name }}
+        - name: {{ $.Chart.Name }}-{{ $jobSafe }}
           {{- with $job.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
@@ -60,8 +61,13 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-          image: "{{ if $job.image }}{{ default $common.image.repository $job.image.repository }}{{ else }}{{ $common.image.repository }}{{ end }}:{{ if $job.image }}{{ default $common.image.tag $job.image.tag }}{{ else }}{{ $common.image.tag }}{{ end }}"
-          imagePullPolicy: {{ if $job.image }}{{ default $common.image.pullPolicy $job.image.pullPolicy }}{{ else }}{{ $common.image.pullPolicy }}{{ end }}
+          {{- if $job.image }}
+          image: {{ include "citadel-common.image" (dict "repository" $job.image.repository "tag" $job.image.tag "commonRepository" $common.image.repository "commonTag" $common.image.tag "path" (printf "jobs[%s]" $jobSafe)) | quote }}
+          imagePullPolicy: {{ default $common.image.pullPolicy $job.image.pullPolicy }}
+          {{- else }}
+          image: {{ include "citadel-common.image" (dict "commonRepository" $common.image.repository "commonTag" $common.image.tag "path" "common.image") | quote }}
+          imagePullPolicy: {{ $common.image.pullPolicy }}
+          {{- end }}
           {{- with $job.command }}
           command: {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -88,7 +94,7 @@ spec:
           {{- if $common.sharedPVCs }}
           volumeMounts:
             {{- range $common.sharedPVCs }}
-            - name: {{ .name }}
+            - name: {{ include "citadel-common.dnsLabel" .name }}
               mountPath: {{ .mountPath }}
             {{- end }}
           {{- end }}
@@ -103,9 +109,9 @@ spec:
       {{- if $common.sharedPVCs }}
       volumes:
         {{- range $common.sharedPVCs }}
-        - name: {{ .name }}
+        - name: {{ include "citadel-common.dnsLabel" .name }}
           persistentVolumeClaim:
-            claimName: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+            claimName: {{ include "citadel-common.fullname" $ }}-{{ include "citadel-common.dnsLabel" .name }}
         {{- end }}
       {{- end }}
 {{- end }}

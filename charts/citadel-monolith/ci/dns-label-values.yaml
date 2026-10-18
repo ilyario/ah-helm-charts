@@ -1,0 +1,15 @@
+# CI values: dots in fullnameOverride and application name must render as DNS-1035-safe names.
+fullnameOverride: "my.site.ru"
+
+common:
+  image:
+    repository: nginx
+    pullPolicy: IfNotPresent
+    tag: latest
+
+applications:
+  - name: "app.v1"
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 80

@@ -1,13 +1,15 @@
 {{- range .Values.applications }}
 {{- if and .service .serviceMonitor (and .serviceMonitor .serviceMonitor.enabled) }}
+{{- $appSafe := include "citadel-common.dnsLabel" .name }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+  name: {{ include "citadel-common.fullname" $ }}-{{ $appSafe }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ .name }}
+    app.kubernetes.io/component: {{ $appSafe }}
+    component: {{ $appSafe }}
     {{- with .serviceMonitor.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -22,9 +24,10 @@ spec:
   selector:
     matchLabels:
       {{- include "citadel-common.selectorLabels" $ | nindent 6 }}
-      app.kubernetes.io/component: {{ .name }}
+      app.kubernetes.io/component: {{ $appSafe }}
+      component: {{ $appSafe }}
   endpoints:
-    - port: {{ default (printf "http-%s" .name) .serviceMonitor.portName }}
+    - port: {{ default (printf "http-%s" $appSafe) .serviceMonitor.portName }}
       path: {{ required (printf "applications.%s: serviceMonitor.path is required" .name) .serviceMonitor.path }}
       interval: {{ required (printf "applications.%s: serviceMonitor.interval is required" .name) .serviceMonitor.interval }}
       scrapeTimeout: {{ required (printf "applications.%s: serviceMonitor.scrapeTimeout is required" .name) .serviceMonitor.scrapeTimeout }}

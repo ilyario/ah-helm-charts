@@ -1,0 +1,15 @@
+# CI values: dots only in Helm release name (no fullnameOverride).
+fullnameOverride: ""
+
+common:
+  image:
+    repository: nginx
+    pullPolicy: IfNotPresent
+    tag: latest
+
+applications:
+  - name: "core"
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 80

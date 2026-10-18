@@ -2,11 +2,12 @@
 {{- range $app := .Values.applications }}
 {{- if $app.ingress }}
 {{- if $app.ingress.enabled }}
+{{- $appSafe := include "citadel-common.dnsLabel" $app.name }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "citadel-common.fullname" $ }}-{{ $app.name }}
+  name: {{ include "citadel-common.fullname" $ }}-{{ $appSafe }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
   {{- with $app.ingress.annotations }}
@@ -37,7 +38,7 @@ spec:
           pathType: {{ $path.pathType | default "ImplementationSpecific" }}
           backend:
             service:
-              name: {{ include "citadel-common.fullname" $ }}-{{ $app.name }}
+              name: {{ include "citadel-common.fullname" $ }}-{{ $appSafe }}
               port:
                 number: {{ $app.service.port }}
         {{- end }}

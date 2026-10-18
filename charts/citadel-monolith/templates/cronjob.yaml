@@ -1,11 +1,12 @@
 {{ $common := .Values.common }}
 {{- range $cronjob := .Values.cronjobs }}
 {{- if $cronjob.enabled }}
+{{- $cronSafe := include "citadel-common.dnsLabel" .name }}
 ---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "citadel-common.fullname" $ }}-cronjob-{{ .name }}
+  name: {{ include "citadel-common.fullname" $ }}-cronjob-{{ $cronSafe }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
     app.kubernetes.io/component: {{ .name }}
@@ -61,7 +62,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           containers:
-            - name: {{ $.Chart.Name }}-{{ .name }}
+            - name: {{ $.Chart.Name }}-{{ $cronSafe }}
               {{- with $cronjob.securityContext }}
               securityContext:
                 {{- toYaml . | nindent 16 }}
@@ -75,8 +76,13 @@ spec:
                 {{- toYaml . | nindent 16 }}
                 {{- end }}
               {{- end }}
-              image: "{{ if $cronjob.image }}{{ default $common.image.repository $cronjob.image.repository }}{{ else }}{{ $common.image.repository }}{{ end }}:{{ if $cronjob.image }}{{ default $common.image.tag $cronjob.image.tag }}{{ else }}{{ $common.image.tag }}{{ end }}"
-              imagePullPolicy: {{ if $cronjob.image }}{{ default $common.image.pullPolicy $cronjob.image.pullPolicy }}{{ else }}{{ $common.image.pullPolicy }}{{ end }}
+              {{- if $cronjob.image }}
+              image: {{ include "citadel-common.image" (dict "repository" $cronjob.image.repository "tag" $cronjob.image.tag "commonRepository" $common.image.repository "commonTag" $common.image.tag "path" (printf "cronjobs[%s]" $cronSafe)) | quote }}
+              imagePullPolicy: {{ default $common.image.pullPolicy $cronjob.image.pullPolicy }}
+              {{- else }}
+              image: {{ include "citadel-common.image" (dict "commonRepository" $common.image.repository "commonTag" $common.image.tag "path" "common.image") | quote }}
+              imagePullPolicy: {{ $common.image.pullPolicy }}
+              {{- end }}
               {{- with $cronjob.command }}
               command: {{- toYaml . | nindent 16 }}
               {{- end }}
@@ -103,7 +109,7 @@ spec:
               {{- if $common.sharedPVCs }}
               volumeMounts:
                 {{- range $common.sharedPVCs }}
-                - name: {{ .name }}
+                - name: {{ include "citadel-common.dnsLabel" .name }}
                   mountPath: {{ .mountPath }}
                 {{- end }}
               {{- end }}
@@ -115,12 +121,16 @@ spec:
           affinity:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with $common.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if $common.sharedPVCs }}
           volumes:
             {{- range $common.sharedPVCs }}
-            - name: {{ .name }}
+            - name: {{ include "citadel-common.dnsLabel" .name }}
               persistentVolumeClaim:
-                claimName: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+                claimName: {{ include "citadel-common.fullname" $ }}-{{ include "citadel-common.dnsLabel" .name }}
             {{- end }}
           {{- end }}
 {{- end }}

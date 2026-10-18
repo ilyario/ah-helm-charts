@@ -1,14 +1,15 @@
 {{ $common := .Values.common }}
 {{- range .Values.applications }}
-{{- $appName := .name }}
+{{- $appSafe := include "citadel-common.dnsLabel" .name }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+  name: {{ include "citadel-common.fullname" $ }}-{{ $appSafe }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ $appName }}
+    app.kubernetes.io/component: {{ $appSafe }}
+    component: {{ $appSafe }}
     secrets.infisical.com/auto-reload: "true"
   {{- with .annotations }}
   annotations:
@@ -44,7 +45,8 @@ spec:
       {{- end }}
       labels:
         {{- include "citadel-common.selectorLabels" $ | nindent 8 }}
-        app.kubernetes.io/component: {{ $appName }}
+        app.kubernetes.io/component: {{ $appSafe }}
+        component: {{ $appSafe }}
     spec:
       {{- if or .imagePullSecrets $common.imagePullSecrets }}
       imagePullSecrets:
@@ -61,7 +63,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ $appName }}
+        - name: {{ $appSafe }}
           {{- with .securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
@@ -76,10 +78,10 @@ spec:
             {{- end }}
           {{- end }}
           {{- if .image }}
-          image: "{{ default $common.image.repository .image.repository }}:{{ default $common.image.tag .image.tag }}"
+          image: {{ include "citadel-common.image" (dict "repository" .image.repository "tag" .image.tag "commonRepository" $common.image.repository "commonTag" $common.image.tag "path" (printf "applications[%s]" $appSafe)) | quote }}
           imagePullPolicy: {{ default $common.image.pullPolicy .image.pullPolicy }}
           {{- else }}
-          image: "{{ $common.image.repository }}:{{ $common.image.tag }}"
+          image: {{ include "citadel-common.image" (dict "commonRepository" $common.image.repository "commonTag" $common.image.tag "path" "common.image") | quote }}
           imagePullPolicy: {{ $common.image.pullPolicy }}
           {{- end }}
           {{- if .command }}
@@ -96,7 +98,7 @@ spec:
             {{- end }}
             {{- if and .infisical .infisical.enabled }}
             - secretRef:
-                name: {{ include "citadel-common.fullname" $ }}-{{ .name }}-env-vars
+                name: {{ include "citadel-common.fullname" $ }}-{{ $appSafe }}-env-vars
             {{- end }}
             {{- if $common.sharedSecrets }}
             {{- range $common.sharedSecrets }}
@@ -107,7 +109,7 @@ spec:
           {{- end }}
           {{- if .service }}
           ports:
-            - name: http-{{ .name }}
+            - name: http-{{ $appSafe }}
               containerPort: {{ .service.port }}
               protocol: TCP
           {{- end }}
@@ -130,7 +132,7 @@ spec:
           {{- if $common.sharedPVCs }}
           volumeMounts:
             {{- range $common.sharedPVCs }}
-            - name: {{ .name }}
+            - name: {{ include "citadel-common.dnsLabel" .name }}
               mountPath: {{ .mountPath }}
             {{- end }}
           {{- end }}
@@ -142,7 +144,7 @@ spec:
       topologySpreadConstraints:
         {{- range . }}
         - {{- if .labelSelector.matchLabels }}
-            {{- $_ := set .labelSelector.matchLabels "component" $appName }}
+            {{- $_ := set .labelSelector.matchLabels "component" $appSafe }}
           {{- end }}
           {{- toYaml . | nindent 10 }}
         {{- end }}
@@ -158,9 +160,9 @@ spec:
       {{- if $common.sharedPVCs }}
       volumes:
         {{- range $common.sharedPVCs }}
-        - name: {{ .name }}
+        - name: {{ include "citadel-common.dnsLabel" .name }}
           persistentVolumeClaim:
-            claimName: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+            claimName: {{ include "citadel-common.fullname" $ }}-{{ include "citadel-common.dnsLabel" .name }}
         {{- end }}
       {{- end }}
 {{- end }}

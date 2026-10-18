@@ -5,12 +5,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+  name: {{ include "citadel-common.fullname" $ }}-{{ include "citadel-common.dnsLabel" .name }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
   annotations:
-    "helm.sh/hook": {{ default "pre-install" $common.infisical.helmHook }}
-    "helm.sh/hook-weight": {{ default "-5" $common.infisical.helmHookWeight | quote }}
     "helm.sh/resource-policy": "keep"
 spec:
   accessModes:

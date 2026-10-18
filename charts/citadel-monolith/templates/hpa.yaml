@@ -1,13 +1,14 @@
 {{- range .Values.applications }}
 {{- if and .autoscaling .autoscaling.enabled }}
+{{- $appSafe := include "citadel-common.dnsLabel" .name }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+  name: {{ include "citadel-common.fullname" $ }}-{{ $appSafe }}
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
-    app.kubernetes.io/component: {{ .name }}
+    app.kubernetes.io/component: {{ $appSafe }}
   {{- with .autoscaling.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -16,7 +17,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "citadel-common.fullname" $ }}-{{ .name }}
+    name: {{ include "citadel-common.fullname" $ }}-{{ $appSafe }}
   minReplicas: {{ .autoscaling.minReplicas }}
   maxReplicas: {{ .autoscaling.maxReplicas }}
   metrics:

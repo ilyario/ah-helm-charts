@@ -48,6 +48,7 @@ service:
   port: 80
 
 ingress:
+  enabled: true
   host: static-proxy.example.com
   className: "nginx"
   annotations: {}

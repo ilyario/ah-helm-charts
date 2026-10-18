@@ -32,7 +32,7 @@ spec:
         type: {{ include "citadel-common.httproutePathMatchType" .pathType }}
         value: {{ .path | quote }}
     backendRefs:
-    - name: {{ include "citadel-common.fullname" $ }}-{{ $app.name }}
+    - name: {{ include "citadel-common.fullname" $ }}-{{ include "citadel-common.dnsLabel" $app.name }}
       port: {{ $app.service.port }}
   {{- end }}
 {{- end }}

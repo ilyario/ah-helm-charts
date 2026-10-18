@@ -12,7 +12,7 @@
 2. Приложения доступны друг другу по адресам:
 {{- range $app := .Values.applications }}
   {{- if $app.service }}
-  http://{{ include "citadel-common.fullname" $ }}-{{ .name }}:{{ $app.service.port }}
+  http://{{ include "citadel-common.fullname" $ }}-{{ include "citadel-common.dnsLabel" .name }}:{{ $app.service.port }}
   {{- end }}
 {{- end }}
 
