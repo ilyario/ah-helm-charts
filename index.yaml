@@ -4,6 +4,8 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: added
+          description: per-PVC annotations on sharedPVCs so an existing Helm hook claim can keep helm.sh/hook
+        - kind: added
           description: kubeVersion constraint, icon and artifacthub.io annotations
         - kind: added
           description: values documentation in chart README generated with helm-docs
@@ -18,7 +20,49 @@ entries:
       licenses: MIT
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-10-18T11:01:30.339741115Z"
+    created: "2026-10-19T11:55:32.005875528Z"
+    description: A Helm chart for deploying monolithic applications in Kubernetes
+      with enhanced security, monitoring, and configuration management
+    digest: e52507d1f8edb6ac596158300d51a06dc3898c975a221b39284408f552b03e76
+    home: https://github.com/ilyario/ah-helm-charts
+    icon: https://raw.githubusercontent.com/ilyario/ah-helm-charts/main/docs/assets/citadel-icon.svg
+    keywords:
+    - kubernetes
+    - helm
+    - deployment
+    - monolithic
+    - monitoring
+    - infisical
+    - prometheus
+    kubeVersion: '>=1.23.0-0'
+    maintainers:
+    - email: ponomarevid@ya.ru
+      name: Ilya Ponomarev
+    name: citadel
+    sources:
+    - https://github.com/ilyario/ah-helm-charts
+    type: application
+    urls:
+    - https://ilyario.github.io/ah-helm-charts/packages/citadel-0.2.9.tgz
+    version: 0.2.9
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: added
+          description: kubeVersion constraint, icon and artifacthub.io annotations
+        - kind: added
+          description: values documentation in chart README generated with helm-docs
+        - kind: added
+          description: PR CI with helm lint, chart-testing (ct lint) and kube-linter
+      artifacthub.io/links: |
+        - name: source
+          url: https://github.com/ilyario/ah-helm-charts
+        - name: support
+          url: https://github.com/ilyario/ah-helm-charts/issues
+      category: Application
+      licenses: MIT
+    apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-10-19T11:55:32.003940062Z"
     description: A Helm chart for deploying monolithic applications in Kubernetes
       with enhanced security, monitoring, and configuration management
     digest: 66eefa526b6ff72f7c8df683f635090d1601f0bbe65b70be7c0faaa54b550854
@@ -61,10 +105,10 @@ entries:
       licenses: MIT
     apiVersion: v2
     appVersion: 1.16.0
-    created: "2026-10-18T11:01:30.34043316Z"
+    created: "2026-10-19T11:55:32.006551643Z"
     description: A Helm chart for deploying an NGINX-based reverse proxy to external
       and internal resources (Ingress/HTTPRoute, Service, HPA)
-    digest: f023b6206ac3017b7ff0cea83fb7f855dd577904ddbdbd053a129d84139ade60
+    digest: 177467cef51310787b64b231c4d4f0fe021cff30fe20359300cc3fd83fcbeb00
     home: https://github.com/ilyario/ah-helm-charts
     icon: https://raw.githubusercontent.com/ilyario/ah-helm-charts/main/docs/assets/static-proxy-icon.svg
     keywords:
@@ -84,4 +128,4 @@ entries:
     urls:
     - https://ilyario.github.io/ah-helm-charts/packages/static-proxy-0.1.2.tgz
     version: 0.1.2
-generated: "2026-10-18T11:01:30.338575655Z"
+generated: "2026-10-19T11:55:32.002724017Z"
