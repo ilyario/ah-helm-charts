@@ -1,0 +1,30 @@
+# CI: shared PVC annotations. resource-policy keep is the default;
+# per-item annotations add Helm hooks without dropping that default.
+common:
+  image:
+    repository: nginx
+    pullPolicy: IfNotPresent
+    tag: "1.29"
+  sharedPVCs:
+    - name: plain
+      mountPath: /data
+      size: 1Gi
+      accessModes:
+        - ReadWriteOnce
+    - name: hooked
+      mountPath: /static
+      size: 1Gi
+      accessModes:
+        - ReadWriteMany
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-5"
+        example.com/owner: platform
+        helm.sh/resource-policy: keep
+
+applications:
+  - name: web
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 80

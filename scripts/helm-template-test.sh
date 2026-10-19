@@ -47,4 +47,11 @@ helm template test-citadel-strategy charts/citadel-monolith \
   --show-only templates/deployment.yaml
 python3 scripts/test_citadel_update_strategy.py
 
+echo "== citadel-monolith: shared PVC annotations =="
+helm template test-citadel-pvc charts/citadel-monolith \
+  -f charts/citadel-monolith/ci/pvc-annotations-values.yaml \
+  --namespace app-test \
+  --show-only templates/pvc.yaml
+python3 scripts/test_citadel_pvc_annotations.py
+
 echo "OK: Gateway API and HPA templates render successfully."

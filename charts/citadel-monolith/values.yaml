@@ -52,7 +52,7 @@ common:
   # -- Registry pull secrets for the default image
   imagePullSecrets: []
     # - name: regcred
-  # -- PVCs provisioned in the release namespace and mounted into every application pod
+  # -- PVCs provisioned in the release namespace and mounted into every application pod. Per-item `annotations` are merged onto the claim; `helm.sh/resource-policy=keep` is the default so uninstall does not delete the volume. Set `helm.sh/hook` on a claim that was created as a Helm hook so upgrade does not try to adopt it.
   sharedPVCs: []
     # - name: static-storage
     #   mountPath: /static
@@ -60,6 +60,9 @@ common:
     #   size: 10Gi
     #   accessModes:
     #     - ReadWriteMany
+    #   annotations:
+    #     helm.sh/hook: pre-install
+    #     helm.sh/hook-weight: "-5"
   # -- Pre-existing Secrets mounted into every application pod
   sharedSecrets: []
     # - my-secret-name

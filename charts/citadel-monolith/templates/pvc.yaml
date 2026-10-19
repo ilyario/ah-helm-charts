@@ -1,6 +1,7 @@
 {{ $common := .Values.common }}
 {{- if $common.sharedPVCs }}
 {{- range $common.sharedPVCs }}
+{{- $annotations := mergeOverwrite (dict "helm.sh/resource-policy" "keep") (default (dict) .annotations) }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -9,7 +10,9 @@ metadata:
   labels:
     {{- include "citadel-common.labels" $ | nindent 4 }}
   annotations:
-    "helm.sh/resource-policy": "keep"
+    {{- range $key := keys $annotations }}
+    {{ $key | quote }}: {{ index $annotations $key | toString | quote }}
+    {{- end }}
 spec:
   accessModes:
     {{- toYaml .accessModes | nindent 4 }}

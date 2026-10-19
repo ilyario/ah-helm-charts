@@ -1,4 +1,4 @@
-![Version: 0.2.8](https://img.shields.io/badge/Version-0.2.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 0.2.9](https://img.shields.io/badge/Version-0.2.9-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for deploying monolithic applications in Kubernetes clusters.
 
@@ -186,12 +186,28 @@ common:
       size: 10Gi
       accessModes:
         - ReadWriteMany
+      # Optional. Merged onto the PVC. `helm.sh/resource-policy: keep` is set
+      # unless the same key is overridden here.
+      annotations: {}
   sharedSecrets:
     - my-secret-name
   env:
     - name: TZ
       value: Asia/Irkutsk
 ```
+
+A claim created by a chart version that rendered `helm.sh/hook: pre-install` is not part of the release manifest. After that hook was removed, `helm upgrade` tries to create the same PVC as a regular resource and fails because it already exists. Put the previous hook annotations on that item so Helm keeps treating it as a hook:
+
+```yaml
+common:
+  sharedPVCs:
+    - name: static
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-5"
+```
+
+Leave `helm.sh/hook` unset on new claims. A `pre-install` hook is not created on `helm upgrade`.
 
 ### Topology spread constraints
 
@@ -477,7 +493,7 @@ This project is licensed under MIT.
 | common.infisical.url | string | `"http://infisical-standalone-infisical.infisical.svc.cluster.local:8080/api"` | Infisical API URL |
 | common.ingress | object | `{"className":"nginx"}` | Ingress class for per-application Ingress resources |
 | common.nodeSelector | object | `{}` | Node selector applied to all application pods |
-| common.sharedPVCs | list | `[]` | PVCs provisioned in the release namespace and mounted into every application pod |
+| common.sharedPVCs | list | `[]` | PVCs provisioned in the release namespace and mounted into every application pod. Per-item `annotations` are merged onto the claim; `helm.sh/resource-policy=keep` is the default so uninstall does not delete the volume. Set `helm.sh/hook` on a claim that was created as a Helm hook so upgrade does not try to adopt it. |
 | common.sharedSecrets | list | `[]` | Pre-existing Secrets mounted into every application pod |
 | common.tolerations | list | `[]` | Tolerations applied to all application pods |
 | cronjobs | list | `[]` | CronJobs with schedule/timeZone/concurrency policy and history limits; empty image tag fails rendering |

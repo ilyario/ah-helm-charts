@@ -2,7 +2,7 @@ apiVersion: v2
 name: citadel
 description: A Helm chart for deploying monolithic applications in Kubernetes with enhanced security, monitoring, and configuration management
 type: application
-version: 0.2.8
+version: 0.2.9
 appVersion: "1.0.0"
 kubeVersion: ">=1.23.0-0"
 home: https://github.com/ilyario/ah-helm-charts
@@ -29,6 +29,8 @@ annotations:
     - name: support
       url: https://github.com/ilyario/ah-helm-charts/issues
   artifacthub.io/changes: |
+    - kind: added
+      description: per-PVC annotations on sharedPVCs so an existing Helm hook claim can keep helm.sh/hook
     - kind: added
       description: kubeVersion constraint, icon and artifacthub.io annotations
     - kind: added

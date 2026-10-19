@@ -186,12 +186,28 @@ common:
       size: 10Gi
       accessModes:
         - ReadWriteMany
+      # Optional. Merged onto the PVC. `helm.sh/resource-policy: keep` is set
+      # unless the same key is overridden here.
+      annotations: {}
   sharedSecrets:
     - my-secret-name
   env:
     - name: TZ
       value: Asia/Irkutsk
 ```
+
+A claim created by a chart version that rendered `helm.sh/hook: pre-install` is not part of the release manifest. After that hook was removed, `helm upgrade` tries to create the same PVC as a regular resource and fails because it already exists. Put the previous hook annotations on that item so Helm keeps treating it as a hook:
+
+```yaml
+common:
+  sharedPVCs:
+    - name: static
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-5"
+```
+
+Leave `helm.sh/hook` unset on new claims. A `pre-install` hook is not created on `helm upgrade`.
 
 ### Topology spread constraints
 

@@ -69,6 +69,7 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         run: |
           python3 scripts/test_citadel_update_strategy.py
+          python3 scripts/test_citadel_pvc_annotations.py
           python3 scripts/test_citadel_sre_dashboard.py
 
       - name: Run dns-label tests
